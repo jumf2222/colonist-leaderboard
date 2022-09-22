@@ -1,0 +1,108 @@
+@font-face {
+	font-family: PixelFont;
+	src: url($lib/assets/GamegirlClassic.ttf) format("truetype");
+	font-weight: 500;
+	font-style: normal;
+}
+
+::-moz-selection {
+	color: var(--button);
+	background: var(--blue-font);
+}
+  
+::selection {
+	color: var(--button);
+	background: var(--blue-font);
+}
+
+:root {
+    font-family: Arial, Helvetica, sans-serif;
+    color-scheme: light;
+
+	--background: #F5F5F5;
+	--surface: #FFFFFF;
+	--surface-hover: #F6FCFF;
+	--font: #141414;
+	--light-font: rgba(20, 20, 20, 0.6);
+	--nav-hover: #DDDDDD;
+	--button: #fff;
+	--button-hover: #0073B5;
+
+	--gold-font: #B37A00;
+	--gold-background: rgba(255, 200, 82, 0.2);
+	--blue-font: #0088D6;
+	--blue-background: rgba(82, 192, 255, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+
+		--background: #222222;
+		--surface: #363636;
+		--surface-hover: #404040;
+		--font: #F5F5F5;
+		--light-font: rgba(245, 245, 245, 0.6);
+		--nav-hover: #4A4A4A;
+		--button: #222;
+		--button-hover: #5EBCF1;
+
+		--gold-font: #FFC038;
+		--blue-font: #75CDFF;
+    }
+}
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+
+body {
+	background-color: var(--background);
+	line-height: 1;
+}
+
+ol, ul {
+	list-style: none;
+}
+
+blockquote, q {
+	quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+h1, h2 {
+	font-family: PixelFont;
+}
