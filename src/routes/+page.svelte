@@ -8,6 +8,7 @@
 	import { goto } from '$app/navigation';
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { PageData } from './$types';
+	import type { Leaderboard } from './+page.server';
 
 	let usernames = savedStore('usernames', '');
 	export let data: PageData;
@@ -28,8 +29,20 @@
 </script>
 
 <svelte:head>
-	<title>Colonist Leaderboard</title>
-	<meta name="description" content="Colonist Leaderboard by Julian de Rushe and Brian Latchman" />
+	{#if data.leaderboard}
+		<title
+			>{`Rankings for ${data.leaderboard.players
+				.map((player) => player.username)
+				.join(', ')}`}</title
+		>
+		<meta
+			property="og:description"
+			content={data.leaderboard.players
+				.map((player) => `${player.rank + 1}. ${player.username} (${player.points} Points)`)
+				.concat([`Games: ${data.leaderboard.games}`])
+				.join('\n')}
+		/>
+	{/if}
 </svelte:head>
 
 <nav>
