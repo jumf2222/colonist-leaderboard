@@ -26,15 +26,18 @@
 		const usernames = data.get('usernames');
 		goto(!usernames ? '/' : `/?${new URLSearchParams({ usernames: String(usernames) })}`);
 	};
+
+	$: title = `Rankings for ${
+		data.leaderboard
+			? data.leaderboard.players.map((player) => player.username).join(', ')
+			: data.usernames
+	}`;
 </script>
 
 <svelte:head>
 	{#if data.leaderboard}
-		<title
-			>{`Rankings for ${data.leaderboard.players
-				.map((player) => player.username)
-				.join(', ')}`}</title
-		>
+		<title>{title}</title>
+		<meta property="og:title" content={title} />
 		<meta
 			property="og:description"
 			content={data.leaderboard.players
