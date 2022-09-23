@@ -1,6 +1,7 @@
 {
     "name": "Colonist Leaderboard",
     "short_name": "Leaderboard",
+    "start_url": "/",
     "icons": [
         {
             "src": "/favicon.svg",
