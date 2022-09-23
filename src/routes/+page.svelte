@@ -28,7 +28,7 @@
 	};
 
 	$: title = `Rankings for ${
-		data.leaderboard
+		data.leaderboard && data.leaderboard.players.length > 0
 			? data.leaderboard.players.map((player) => player.username).join(', ')
 			: data.usernames
 	}`;
