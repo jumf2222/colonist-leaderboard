@@ -3,29 +3,28 @@
 	import LinkOut from '$lib/assets/link-out.svg?component';
 	import AddPeople from '$lib/assets/add-people.svg?component';
 	import PlayerEntry from './playerEntry.svelte';
-	import type { Leaderboard } from './api/leaderboard/+server';
 	import { savedStore } from '$lib/savedStore';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { enhance, type SubmitFunction } from '$app/forms';
+	import type { PageData } from './$types';
 
 	let usernames = savedStore('usernames', '');
-	let leaderboard: Leaderboard | undefined;
+	export let data: PageData;
 
-	const getLeaderboard = async () => {
-		const response = await fetch(
-			`/api/leaderboard?${new URLSearchParams({ usernames: $usernames })}`,
-			{
-				headers: { 'content-type': 'application/json' }
-			}
-		);
-
-		if (response.ok) {
-			leaderboard = await response.json();
-		}
-	};
+	$: if (data.usernames) $usernames = data.usernames;
 
 	onMount(() => {
-		if ($usernames) getLeaderboard();
+		if ($usernames && new URLSearchParams(window.location.search).get('usernames') !== $usernames) {
+			goto(`/?${new URLSearchParams({ usernames: $usernames })}`);
+		}
 	});
+
+	const onSubmit: SubmitFunction = ({ data, cancel }) => {
+		cancel();
+		const usernames = data.get('usernames');
+		goto(!usernames ? '/' : `/?${new URLSearchParams({ usernames: String(usernames) })}`);
+	};
 </script>
 
 <svelte:head>
@@ -40,8 +39,8 @@
 			<LinkOut alt="External link icon" />
 		</a>
 		<p class="games-text">
-			{#if leaderboard}
-				Games played: {leaderboard.games}
+			{#if data.leaderboard}
+				Games played: {data.leaderboard.games}
 			{/if}
 		</p>
 	</div>
@@ -50,19 +49,20 @@
 <main>
 	<h1 class="logo">Colonist Leaderboard</h1>
 
-	<form class="input" on:submit|preventDefault={getLeaderboard}>
+	<form class="input" use:enhance={onSubmit} method="post">
 		<input
 			type="text"
 			placeholder="Enter a comma-separated list of players..."
 			bind:value={$usernames}
+			name="usernames"
 		/>
 		<button>
 			<AddPeople alt="Add people icon" />
 		</button>
 	</form>
 
-	{#if leaderboard}
-		{#each leaderboard.players as player}
+	{#if data.leaderboard}
+		{#each data.leaderboard.players as player}
 			<PlayerEntry {player} />
 		{:else}
 			<h2>No games</h2>
