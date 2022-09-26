@@ -8,7 +8,6 @@
 	import { goto } from '$app/navigation';
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { PageData } from './$types';
-	import type { Leaderboard } from './+page.server';
 
 	let usernames = savedStore('usernames', '');
 	export let data: PageData;
@@ -41,7 +40,12 @@
 		<meta
 			property="og:description"
 			content={data.leaderboard.players
-				.map((player) => `${player.rank + 1}. ${player.username} (${player.points} Points)`)
+				.map(
+					(player) =>
+						`${player.rank + 1}. ${player.username} (${player.points} Points${
+							player.winStreak > 0 ? `, ${player.winStreak} W` : ''
+						})`
+				)
 				.concat([`Games: ${data.leaderboard.games}`])
 				.join('\n')}
 		/>
@@ -194,11 +198,17 @@
 		border: 2px solid transparent;
 		border-radius: 500px 0 0 500px;
 		flex: 1;
+		transition: background-color 0.2s;
+	}
+
+	.input input:hover {
+		background-color: var(--surface-hover);
 	}
 
 	.input input:focus {
 		outline: none;
 		border: 2px solid var(--blue-font);
+		background-color: var(--surface-hover);
 	}
 
 	.input input::placeholder {
@@ -208,12 +218,11 @@
 	.input button {
 		cursor: pointer;
 		background-color: var(--blue-font);
-		height: 40px;
-		width: 40px;
+		height: 50px;
+		width: 50px;
 		border: none;
-		margin: 5px;
 		padding: 4px;
-		border-radius: 500px;
+		border-radius: 0 500px 500px 0;
 		transition: background-color 0.2s;
 	}
 
@@ -224,6 +233,10 @@
 
 	.input button:hover {
 		background-color: var(--button-hover);
+	}
+
+	.input button :global(svg) {
+		margin-right: 3px;
 	}
 
 	.input button :global(svg path) {

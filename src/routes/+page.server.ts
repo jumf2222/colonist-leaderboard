@@ -3,9 +3,19 @@ import makeFetchCookie from "fetch-cookie";
 import type { PageServerLoad } from "./$types";
 
 interface GamePlayer { username: string, rank: number; }
-interface Game { players: GamePlayer[], finished: boolean; }
+interface Game { players: GamePlayer[], finished: boolean; startTime: number; }
 
-export interface Player { username: string, points: number, ranks: [number, number, number]; rank: number; }
+export interface Player {
+    username: string;
+    points: number;
+    ranks: [number, number, number];
+    rank: number;
+    winStreak: number;
+    lossStreak: number;
+    winPercent: number;
+    longestWinStreak: number;
+    longestLossStreak: number;
+}
 export interface Leaderboard { games: number, players: Player[]; }
 
 export const load: PageServerLoad<{ leaderboard: Leaderboard | null; usernames: string; }> = async ({ url }) => {
@@ -43,18 +53,38 @@ export const load: PageServerLoad<{ leaderboard: Leaderboard | null; usernames: 
         }
 
         return true;
-    });
+    }).sort((a, b) => a.startTime - b.startTime);
 
     const players: Record<string, Player> = {};
 
     for (const game of data) {
         for (const player of game.players) {
             if (!players[player.username]) {
-                players[player.username] = { points: 0, ranks: [0, 0, 0], username: player.username, rank: 0 };
+                players[player.username] = {
+                    points: 0,
+                    ranks: [0, 0, 0],
+                    username: player.username,
+                    rank: 0,
+                    winStreak: 0,
+                    lossStreak: 0,
+                    winPercent: 0,
+                    longestWinStreak: 0,
+                    longestLossStreak: 0,
+                };
+            }
+
+            if (player.rank === 1) {
+                players[player.username].lossStreak = 0;
+                players[player.username].winStreak++;
+                players[player.username].longestWinStreak = Math.max(players[player.username].longestWinStreak, players[player.username].winStreak);
+            } else {
+                players[player.username].winStreak = 0;
+                players[player.username].lossStreak++;
+                players[player.username].longestLossStreak = Math.max(players[player.username].longestLossStreak, players[player.username].lossStreak);
             }
 
             players[player.username].points += Math.max(4 - player.rank, 0);
-            players[player.username].ranks[player.rank - 1] += 1;
+            players[player.username].ranks[player.rank - 1]++;
         }
     }
 
@@ -62,6 +92,7 @@ export const load: PageServerLoad<{ leaderboard: Leaderboard | null; usernames: 
 
     for (let i = 0; i < playerList.length; i++) {
         playerList[i].rank = i;
+        playerList[i].winPercent = data.length === 0 ? 0 : playerList[i].ranks[0] / data.length;
     }
 
     return { leaderboard: { games: data.length, players: playerList }, usernames };

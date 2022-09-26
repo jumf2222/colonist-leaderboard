@@ -21,13 +21,17 @@
 
 	--background: #F5F5F5;
 	--surface: #FFFFFF;
-	--surface-hover: #F6FCFF;
+	--surface-hover: #ededed;
 	--font: #141414;
 	--light-font: rgba(20, 20, 20, 0.6);
 	--nav-hover: #DDDDDD;
 	--button: #fff;
 	--button-hover: #0073B5;
 
+	--green-font: #009E4C;
+	--green-background: rgba(82, 255, 166, 0.2);
+	--red-font: #F52500;
+	--red-background: rgba(255, 108, 82, 0.2);
 	--gold-font: #B37A00;
 	--gold-background: rgba(255, 200, 82, 0.2);
 	--blue-font: #0088D6;
@@ -47,6 +51,8 @@
 		--button: #222;
 		--button-hover: #5EBCF1;
 
+		--green-font: #48EA96;
+		--red-font: #FFA08F;
 		--gold-font: #FFC038;
 		--blue-font: #75CDFF;
     }
