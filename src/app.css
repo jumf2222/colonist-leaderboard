@@ -21,12 +21,13 @@
 
 	--background: #F5F5F5;
 	--surface: #FFFFFF;
-	--surface-hover: #ededed;
+	--surface-hover: hsl(0, 0%, 98%);
 	--font: #141414;
 	--light-font: rgba(20, 20, 20, 0.6);
 	--nav-hover: #DDDDDD;
 	--button: #fff;
 	--button-hover: #0073B5;
+	--checkbox-background: #0088D6;
 
 	--green-font: #009E4C;
 	--green-background: rgba(82, 255, 166, 0.2);
@@ -50,6 +51,7 @@
 		--nav-hover: #4A4A4A;
 		--button: #222;
 		--button-hover: #5EBCF1;
+		--checkbox-background: var(--blue-background);
 
 		--green-font: #48EA96;
 		--red-font: #FFA08F;
