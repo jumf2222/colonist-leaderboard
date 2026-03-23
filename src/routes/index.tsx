@@ -2,20 +2,27 @@ import { Meta, Title } from "@solidjs/meta";
 import { RoutePreloadFuncArgs, useSearchParams } from "@solidjs/router";
 import { For, Loading, Show, createEffect, createMemo, createSignal, onSettled } from "solid-js";
 import ConfirmDialog from "~/components/ConfirmDialog";
-import MatchHistory from "~/components/MatchHistory";
+import MatchHistory, { formatFullDate, ordinal } from "~/components/MatchHistory";
 import Overview from "~/components/Overview";
 import PlayerEntry from "~/components/PlayerEntry";
 import { getLeaderboard } from "~/lib/api";
 import bookmarkFilledSvg from "~/lib/assets/bookmark-filled.svg?raw";
 import bookmarkSvg from "~/lib/assets/bookmark.svg?raw";
+import dataSvg from "~/lib/assets/data.svg?raw";
 import deleteSvg from "~/lib/assets/delete.svg?raw";
+import dismissSvg from "~/lib/assets/dismiss.svg?raw";
+import historySvg from "~/lib/assets/history.svg?raw";
+import homeSvg from "~/lib/assets/home.svg?raw";
 import linkOutSvg from "~/lib/assets/link-out.svg?raw";
 import moonSvg from "~/lib/assets/moon.svg?raw";
 import peopleCheckSvg from "~/lib/assets/people-check.svg?raw";
 import peopleSvg from "~/lib/assets/people.svg?raw";
+import playSvg from "~/lib/assets/play.svg?raw";
 import searchSvg from "~/lib/assets/search.svg?raw";
 import sunnySvg from "~/lib/assets/sunny.svg?raw";
 import { createLocalSignal } from "~/lib/createLocalSignal";
+import { formatDuration } from "~/lib/format";
+import type { MatchHistoryGame } from "~/lib/types";
 
 interface Bookmark {
     name: string;
@@ -50,6 +57,8 @@ export default function Home() {
     const [hoveredPlayer, setHoveredPlayer] = createSignal<string | null>(null);
     const [activeTab, setActiveTab] = createSignal<"details" | "overview">("details");
     const [showBookmarks, setShowBookmarks] = createSignal(false);
+    const [selectedGame, setSelectedGame] = createSignal<MatchHistoryGame | null>(null);
+    const [showHistory, setShowHistory] = createSignal(false);
     const [theme, setTheme] = createLocalSignal<"light" | "dark">(
         "theme",
         typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -194,17 +203,17 @@ export default function Home() {
                         <div class="input">
                             <input
                                 type="text"
-                                placeholder="Search players..."
-                                value={formUsernames()}
+                                placeholder="Search players"
+                                value={usernames()}
                                 onInput={(e) => setUsernames(e.currentTarget.value)}
                                 name="usernames"
                             />
                             <button
                                 type="button"
                                 class={["exact-btn has-tooltip", { "exact-btn-active": exact() }]}
-                                onClick={() => {
-                                    setSearchParams({ exact: exact() ? false : undefined });
-                                }}
+                                onClick={() =>
+                                    setSearchParams({ exact: exact() ? false : undefined })
+                                }
                             >
                                 <span innerHTML={exact() ? peopleCheckSvg : peopleSvg} />
                                 <span class="tooltip">Exact player match</span>
@@ -225,79 +234,21 @@ export default function Home() {
                                 />
                                 <span class="tooltip">Bookmarks</span>
                             </button>
-                            <Show when={showBookmarks()}>
-                                <div class="bookmark-dropdown">
-                                    <Show when={!isBookmarked()}>
-                                        <div class="bookmark-save-row">
-                                            <input
-                                                type="text"
-                                                class="bookmark-name-input"
-                                                placeholder="Bookmark name..."
-                                                value={bookmarkName()}
-                                                onInput={(e) =>
-                                                    setBookmarkName(e.currentTarget.value)
-                                                }
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter") saveBookmark();
-                                                    if (e.key === "Escape") setShowBookmarks(false);
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                class="bookmark-save-btn"
-                                                onClick={saveBookmark}
-                                            >
-                                                Save
-                                            </button>
-                                        </div>
-                                    </Show>
-                                    <Show when={bookmarks().length > 0}>
-                                        <div class="bookmark-list">
-                                            <For each={bookmarks()}>
-                                                {(bookmark) => (
-                                                    <div class="bookmark-item">
-                                                        <button
-                                                            class="bookmark-load"
-                                                            onClick={() => {
-                                                                loadBookmark(bookmark());
-                                                                setShowBookmarks(false);
-                                                            }}
-                                                        >
-                                                            {bookmark().name}
-                                                        </button>
-                                                        <button
-                                                            class="bookmark-delete"
-                                                            onClick={() =>
-                                                                deleteBookmark(bookmark().name)
-                                                            }
-                                                        >
-                                                            <span innerHTML={deleteSvg} />
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </For>
-                                        </div>
-                                    </Show>
-                                    <Show when={bookmarks().length === 0 && isBookmarked()}>
-                                        <p class="bookmark-empty">No bookmarks</p>
-                                    </Show>
-                                </div>
-                            </Show>
                         </div>
                     </form>
 
                     <div class="nav-actions">
+                        <a class="nav-link" href="https://colonist.io/" target="_blank">
+                            <p>Colonist.io</p>
+                            <span innerHTML={linkOutSvg} />
+                        </a>
+
                         <button type="button" class="theme-btn has-tooltip" onClick={toggleTheme}>
                             <span innerHTML={theme() === "dark" ? moonSvg : sunnySvg} />
                             <span class="tooltip">
                                 {theme() === "dark" ? "Dark mode" : "Light mode"}
                             </span>
                         </button>
-
-                        <a class="nav-link" href="https://colonist.io/" target="_blank">
-                            <p>Colonist.io</p>
-                            <span innerHTML={linkOutSvg} />
-                        </a>
                     </div>
                 </div>
             </nav>
@@ -375,7 +326,10 @@ export default function Home() {
                                                         <PlayerEntry
                                                             player={player()}
                                                             onHover={setHoveredPlayer}
-                                                            hideGames={exact()}
+                                                            hideGames={
+                                                                (searchParams.exact ?? "true") ===
+                                                                "true"
+                                                            }
                                                         />
                                                     )}
                                                 </For>
@@ -385,11 +339,24 @@ export default function Home() {
                                                 <Overview leaderboard={lb()} />
                                             </Show>
                                         </div>
-                                        <div class="history-col">
+                                        <div
+                                            class={[
+                                                "history-col",
+                                                { "history-drawer-open": showHistory() },
+                                            ]}
+                                        >
+                                            <div
+                                                class="history-drawer-overlay"
+                                                onClick={() => setShowHistory(false)}
+                                            />
                                             <MatchHistory
                                                 games={lb().matchHistory}
                                                 hoveredPlayer={hoveredPlayer()}
                                                 totalGames={lb().games}
+                                                onSelectGame={(game) => {
+                                                    setSelectedGame(game);
+                                                    setShowHistory(false);
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -399,12 +366,159 @@ export default function Home() {
                     )}
                 </Show>
             </Loading>
+
+            <Show when={selectedGame()}>
+                {(game) => (
+                    <div class="dialog-overlay" onClick={() => setSelectedGame(null)}>
+                        <div class="match-dialog" onClick={(e) => e.stopPropagation()}>
+                            <div class="match-dialog-header">
+                                <h3>Match Details</h3>
+                                <button
+                                    class="match-dialog-close"
+                                    onClick={() => setSelectedGame(null)}
+                                >
+                                    <span innerHTML={dismissSvg} />
+                                </button>
+                            </div>
+                            <div class="match-dialog-meta">
+                                <div class="match-dialog-stat">
+                                    <span class="match-dialog-label">Date</span>
+                                    <span>{formatFullDate(game().date)}</span>
+                                </div>
+                                <div class="match-dialog-stat">
+                                    <span class="match-dialog-label">Duration</span>
+                                    <span>{formatDuration(game().duration)}</span>
+                                </div>
+                                <div class="match-dialog-stat">
+                                    <span class="match-dialog-label">Turns</span>
+                                    <span>{game().turnCount}</span>
+                                </div>
+                            </div>
+                            <div class="match-dialog-players">
+                                <div class="match-dialog-player-header">
+                                    <span class="mdp-place">Place</span>
+                                    <span class="mdp-name">Player</span>
+                                    <span class="mdp-vp">VP</span>
+                                </div>
+                                <For each={[...game().players].sort((a, b) => a.rank - b.rank)}>
+                                    {(player) => (
+                                        <div
+                                            class={[
+                                                "match-dialog-player-row",
+                                                { "match-dialog-winner": player().rank === 1 },
+                                            ]}
+                                        >
+                                            <span class="mdp-place">
+                                                <span
+                                                    class={{
+                                                        "win chip": player().rank === 1,
+                                                        "loss chip": player().rank !== 1,
+                                                    }}
+                                                >
+                                                    {ordinal(player().rank)}
+                                                </span>
+                                            </span>
+                                            <span class="mdp-name">{player().username}</span>
+                                            <span class="mdp-vp">{player().vp}</span>
+                                        </div>
+                                    )}
+                                </For>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </Show>
+
+            <div class={["bookmark-drawer", { "bookmark-drawer-open": showBookmarks() }]}>
+                <div class="bookmark-drawer-overlay" onClick={() => setShowBookmarks(false)} />
+                <div class="bookmark-dropdown">
+                    <Show when={!isBookmarked()}>
+                        <div class="bookmark-save-row">
+                            <input
+                                type="text"
+                                class="bookmark-name-input"
+                                placeholder="Bookmark name"
+                                value={bookmarkName()}
+                                onInput={(e) => setBookmarkName(e.currentTarget.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveBookmark();
+                                    if (e.key === "Escape") setShowBookmarks(false);
+                                }}
+                            />
+                            <button type="button" class="bookmark-save-btn" onClick={saveBookmark}>
+                                Save
+                            </button>
+                        </div>
+                    </Show>
+                    <Show when={bookmarks().length > 0}>
+                        <div class="bookmark-list">
+                            <For each={bookmarks()}>
+                                {(bookmark) => (
+                                    <div class="bookmark-item">
+                                        <button
+                                            class="bookmark-load"
+                                            onClick={() => {
+                                                loadBookmark(bookmark());
+                                                setShowBookmarks(false);
+                                            }}
+                                        >
+                                            {bookmark().name}
+                                        </button>
+                                        <button
+                                            class="bookmark-delete"
+                                            onClick={() => deleteBookmark(bookmark().name)}
+                                        >
+                                            <span innerHTML={deleteSvg} />
+                                        </button>
+                                    </div>
+                                )}
+                            </For>
+                        </div>
+                    </Show>
+                    <Show when={bookmarks().length === 0 && isBookmarked()}>
+                        <p class="bookmark-empty">No bookmarks</p>
+                    </Show>
+                </div>
+            </div>
+
             <ConfirmDialog
                 message={`Delete bookmark "${deletingBookmark()}"?`}
                 open={deletingBookmark() !== null}
                 onConfirm={confirmDelete}
                 onCancel={() => setDeletingBookmark(null)}
             />
+
+            <div class="bottom-nav">
+                <button
+                    class={["bottom-nav-item", { "bottom-nav-active": activeTab() === "details" }]}
+                    onClick={() => setActiveTab("details")}
+                >
+                    <span innerHTML={homeSvg} />
+                    <span>Overview</span>
+                </button>
+                <button
+                    class={["bottom-nav-item", { "bottom-nav-active": activeTab() === "overview" }]}
+                    onClick={() => setActiveTab("overview")}
+                >
+                    <span innerHTML={dataSvg} />
+                    <span>Visualise</span>
+                </button>
+                <button class="bottom-nav-item" onClick={() => setShowHistory(true)}>
+                    <span innerHTML={historySvg} />
+                    <span>History</span>
+                </button>
+                <button
+                    class={["bottom-nav-item", { "bottom-nav-active": showBookmarks() }]}
+                    onClick={() => setShowBookmarks(!showBookmarks())}
+                >
+                    <span innerHTML={showBookmarks() ? bookmarkFilledSvg : bookmarkSvg} />
+                    <span>Bookmarks</span>
+                </button>
+                <a class="bottom-nav-item" href="https://colonist.io/" target="_blank">
+                    <span innerHTML={playSvg} />
+                    <span>Play</span>
+                </a>
+            </div>
         </>
     );
 }

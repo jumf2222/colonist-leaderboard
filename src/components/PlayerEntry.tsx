@@ -1,5 +1,6 @@
 import { createSignal, For, Show } from "solid-js";
 import bronzeSvg from "~/lib/assets/bronze.svg?raw";
+import chevronSvg from "~/lib/assets/chevron.svg?raw";
 import goldSvg from "~/lib/assets/gold.svg?raw";
 import silverSvg from "~/lib/assets/silver.svg?raw";
 import { formatDuration } from "~/lib/format";
@@ -24,11 +25,6 @@ export default function PlayerEntry(props: {
 }) {
     const [expanded, setExpanded] = createSignal(false);
 
-    const toggle = (e: MouseEvent) => {
-        e.preventDefault();
-        setExpanded((v) => !v);
-    };
-
     const sortedGames = () => [...props.player.games].reverse();
 
     return (
@@ -37,16 +33,23 @@ export default function PlayerEntry(props: {
             onMouseEnter={() => props.onHover(props.player.username)}
             onMouseLeave={() => props.onHover(null)}
         >
-            <a
+            <div
                 class="player-wrapper"
-                href={`https://colonist.io/profile/${props.player.username}`}
-                target="_blank"
+                style={{ cursor: props.hideGames ? "default" : "pointer" }}
+                onClick={() => !props.hideGames && setExpanded((v) => !v)}
             >
                 <div class="row gap m-column center">
                     <div class="row gap center">
                         <h2 class={{ first: props.player.rank === 0 }}>{props.player.rank + 1}</h2>
                         <div class="player name">
-                            <h3>{props.player.username}</h3>
+                            <a
+                                class="player-name-link"
+                                href={`https://colonist.io/profile/${props.player.username}`}
+                                target="_blank"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <h3>{props.player.username}</h3>
+                            </a>
                             <p>{props.player.points} Points</p>
                         </div>
                     </div>
@@ -67,7 +70,7 @@ export default function PlayerEntry(props: {
                                 </p>
                             </div>
                         </div>
-                        <div class="player center">
+                        <div class="player center longest-streak">
                             <h4>Longest Streak</h4>
                             <div>
                                 <p class="chip">{props.player.longestWinStreak} W</p>
@@ -86,37 +89,25 @@ export default function PlayerEntry(props: {
                         <span innerHTML={goldSvg} />
                         <p>{props.player.ranks[0]}</p>
                     </div>
-                    <div class="row medals center">
+                    <div class="row medals center medal-secondary">
                         <span innerHTML={silverSvg} />
                         <p>{props.player.ranks[1]}</p>
                     </div>
-                    <div class="row medals center">
+                    <div class="row medals center medal-secondary">
                         <span innerHTML={bronzeSvg} />
                         <p>{props.player.ranks[2]}</p>
                     </div>
                 </div>
-            </a>
+
+                <Show when={!props.hideGames}>
+                    <span
+                        class={["expand-chevron", { "expand-chevron-open": expanded() }]}
+                        innerHTML={chevronSvg}
+                    />
+                </Show>
+            </div>
 
             <Show when={!props.hideGames}>
-                <button class="expand-btn" onClick={toggle}>
-                    <svg
-                        class={["expand-icon", { "expand-icon-open": expanded() }]}
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <path
-                            d="M7 10l5 5 5-5"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        />
-                    </svg>
-                    {expanded() ? "Hide" : "Show"} Games ({props.player.gamesPlayed})
-                </button>
-
                 <Show when={expanded()}>
                     <div class="games-list">
                         <div class="game-row game-header">

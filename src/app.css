@@ -212,7 +212,7 @@ nav {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 6px 10px;
+    padding: 12px;
     gap: 12px;
     box-sizing: border-box;
 }
@@ -224,6 +224,12 @@ nav {
     text-decoration: none;
     letter-spacing: 2px;
     line-height: 1;
+    border-radius: 4px;
+}
+
+.nav-logo:focus-visible {
+    outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 .theme-btn {
@@ -250,6 +256,7 @@ nav {
 
 .theme-btn:focus-visible {
     outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 .nav-actions {
@@ -279,10 +286,7 @@ nav {
 
 .nav-link:focus-visible {
     outline: 2px solid var(--blue-font);
-}
-
-.nav-link:focus-visible svg path {
-    fill: var(--font);
+    outline-offset: 2px;
 }
 
 .nav-link:hover {
@@ -359,8 +363,8 @@ nav svg {
     cursor: pointer;
     background-color: var(--blue-font);
     height: 38px;
-    width: 38px;
-    min-width: 38px;
+    width: 46px;
+    min-width: 46px;
     border: none;
     padding: 4px;
     border-radius: 0 500px 500px 0;
@@ -368,7 +372,8 @@ nav svg {
 }
 
 .nav-search .input button[type="submit"]:focus-visible {
-    background-color: var(--font);
+    outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 .nav-search .input button[type="submit"]:hover {
@@ -409,7 +414,7 @@ nav svg {
 
 .nav-search .input .exact-btn:focus-visible {
     outline: 2px solid var(--blue-font);
-    outline-offset: -2px;
+    outline-offset: 2px;
 }
 
 .nav-search .checkbox-label {
@@ -422,7 +427,7 @@ nav svg {
     justify-content: center;
     align-items: center;
     gap: 2px;
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
     color: var(--light-font);
     background-color: var(--background);
@@ -431,6 +436,11 @@ nav svg {
 
 .nav-search .checkbox-label:hover {
     background-color: var(--surface-hover);
+}
+
+.nav-search .checkbox-label:focus-visible {
+    outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 .has-tooltip {
@@ -496,6 +506,7 @@ nav svg {
 
 .nav-search .bookmark-btn:focus-visible {
     outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 .nav-search .bookmark-btn:disabled {
@@ -524,6 +535,7 @@ nav svg {
 
 [type="checkbox"]:focus-visible {
     outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 [type="checkbox"]::before {
@@ -554,10 +566,22 @@ nav svg {
     position: relative;
 }
 
+.bookmark-drawer {
+    display: none;
+}
+
+.bookmark-drawer.bookmark-drawer-open {
+    display: block;
+}
+
+.bookmark-drawer-overlay {
+    display: none;
+}
+
 .bookmark-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
+    position: fixed;
+    top: 56px;
+    right: 16px;
     min-width: 220px;
     background-color: var(--surface);
     border-radius: 12px;
@@ -572,7 +596,7 @@ nav svg {
 }
 
 .bookmark-name-input {
-    font-size: 13px;
+    font-size: 12px;
     padding: 6px 12px;
     border: 2px solid transparent;
     border-radius: 8px;
@@ -593,7 +617,7 @@ nav svg {
 }
 
 .bookmark-save-btn {
-    font-size: 13px;
+    font-size: 12px;
     padding: 6px 14px;
     border: none;
     border-radius: 8px;
@@ -609,7 +633,8 @@ nav svg {
 }
 
 .bookmark-save-btn:focus-visible {
-    outline: 2px solid var(--font);
+    outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 .bookmark-save-row + .bookmark-list {
@@ -627,9 +652,10 @@ nav svg {
 }
 
 .bookmark-load {
-    font-size: 13px;
+    font-size: 12px;
     padding: 10px 12px;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
     color: var(--font);
     background-color: transparent;
@@ -645,12 +671,13 @@ nav svg {
 
 .bookmark-load:focus-visible {
     outline: 2px solid var(--blue-font);
-    outline-offset: -2px;
+    outline-offset: 2px;
 }
 
 .bookmark-delete {
     padding: 6px 10px;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
     color: var(--light-font);
     background-color: transparent;
@@ -672,12 +699,12 @@ nav svg {
 }
 
 .bookmark-delete:focus-visible {
-    outline: 2px solid var(--red-font);
-    outline-offset: -2px;
+    outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 .bookmark-empty {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--light-font);
     padding: 16px;
     text-align: center;
@@ -705,7 +732,7 @@ nav svg {
 }
 
 .dialog-message {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--font);
     text-align: center;
     margin-bottom: 20px;
@@ -746,6 +773,10 @@ nav svg {
     background-color: var(--red-font);
 }
 
+:root.dark .dialog-confirm {
+    color: #000;
+}
+
 .dialog-confirm:hover {
     opacity: 0.85;
 }
@@ -783,7 +814,7 @@ nav svg {
 }
 
 .empty-bookmarks-label {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--light-font);
 }
 
@@ -795,7 +826,7 @@ nav svg {
 }
 
 .empty-bookmark-chip {
-    font-size: 13px;
+    font-size: 12px;
     padding: 8px 16px;
     border: none;
     border-radius: 500px;
@@ -815,6 +846,7 @@ nav svg {
 
 .empty-bookmark-chip:focus-visible {
     outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 /* MAIN & LAYOUT */
@@ -844,6 +876,16 @@ main {
 .history-col {
     position: sticky;
     top: 62px;
+}
+
+.history-drawer-overlay {
+    display: none;
+}
+
+/* BOTTOM NAV */
+
+.bottom-nav {
+    display: none;
 }
 
 /* MATCH HISTORY SIDE PANEL */
@@ -906,7 +948,7 @@ main {
 
 .mh-row:focus-visible {
     outline: 2px solid var(--blue-font);
-    outline-offset: -2px;
+    outline-offset: 2px;
 }
 
 .mh-row:last-child {
@@ -939,7 +981,6 @@ main {
 .mh-detail {
     flex-shrink: 0;
     color: var(--light-font);
-    font-size: 11px;
 }
 
 /* PLAYER ENTRY */
@@ -947,7 +988,7 @@ main {
 .player-card {
     background-color: var(--surface);
     border-radius: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     overflow: hidden;
 }
 
@@ -967,6 +1008,7 @@ main {
 
 .player-wrapper:focus-visible {
     outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
 }
 
 .player-wrapper:hover {
@@ -1017,19 +1059,34 @@ main {
     align-items: center;
 }
 
+.player-name-link {
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.player-name-link:focus-visible {
+    outline: 2px solid var(--blue-font);
+    outline-offset: 2px;
+}
+
+.player-name-link:hover h3 {
+    color: var(--blue-font);
+}
+
 .player h3 {
     font-size: 18px;
     color: var(--font);
+    transition: color 0.2s;
 }
 
 .player h4 {
-    font-size: 14px;
+    font-size: 12px;
     opacity: 0.4;
     color: var(--font);
 }
 
 .player p {
-    font-size: 14px;
+    font-size: 12px;
     color: var(--light-font);
 }
 
@@ -1078,41 +1135,31 @@ p.loss {
     background-color: var(--red-background);
 }
 
-/* EXPAND BUTTON & GAMES LIST */
+/* EXPAND CHEVRON & GAMES LIST */
 
-.expand-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    padding: 8px 0;
-    border: none;
-    border-top: 1px solid var(--nav-hover);
-    cursor: pointer;
-    font-size: 12px;
+.expand-chevron {
+    flex-shrink: 0;
     color: var(--light-font);
-    background-color: transparent;
     transition:
-        background-color 0.2s,
+        transform 0.2s,
         color 0.2s;
 }
 
-.expand-btn:hover {
-    background-color: var(--surface-hover);
+.expand-chevron svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.expand-chevron svg path {
+    fill: currentColor;
+}
+
+.player-wrapper:hover .expand-chevron {
     color: var(--font);
 }
 
-.expand-btn:focus-visible {
-    outline: 2px solid var(--blue-font);
-    outline-offset: -2px;
-}
-
-.expand-icon {
-    transition: transform 0.2s;
-}
-
-.expand-icon-open {
+.expand-chevron-open {
     transform: rotate(180deg);
 }
 
@@ -1120,13 +1167,14 @@ p.loss {
     border-top: 1px solid var(--nav-hover);
     max-height: 400px;
     overflow-y: auto;
+    background-color: color-mix(in srgb, var(--surface) 50%, var(--background));
 }
 
 .game-row {
     display: flex;
     align-items: center;
     padding: 8px 18px;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--font);
     border-bottom: 1px solid var(--nav-hover);
     gap: 8px;
@@ -1136,19 +1184,18 @@ p.loss {
     border-bottom: none;
 }
 
-.game-header {
-    font-size: 11px;
-    color: var(--light-font);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: sticky;
-    top: 0;
+.game-row:not(.game-header):nth-child(even) {
     background-color: var(--surface);
-    z-index: 1;
 }
 
-.game-win {
-    background-color: var(--green-background);
+.game-header {
+    font-size: 12px;
+    color: var(--light-font);
+
+    background-color: color-mix(in srgb, var(--surface) 50%, var(--background));
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .game-col {
@@ -1185,11 +1232,15 @@ p.loss {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: var(--light-font);
+    text-align: right;
+}
+
+.game-row:not(.game-header) .game-players {
+    color: var(--font);
 }
 
 .game-row .chip {
-    font-size: 11px;
+    font-size: 12px;
     padding: 2px 6px;
 }
 
@@ -1253,7 +1304,7 @@ p.loss {
 .overview-stats-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .overview-stats-table th {
@@ -1271,13 +1322,12 @@ p.loss {
 }
 
 .overview-stats-row {
-    cursor: pointer;
     transition: background-color 0.2s;
 }
 
 .overview-stats-row:hover,
 .overview-stats-row-active {
-    background-color: var(--nav-hover);
+    background-color: var(--surface-hover);
 }
 
 .overview-player-cell {
@@ -1329,12 +1379,12 @@ p.loss {
 }
 
 .chart-label {
-    font-size: 11px;
+    font-size: 12px;
     fill: var(--light-font);
 }
 
 .chart-axis-title {
-    font-size: 11px;
+    font-size: 12px;
     fill: var(--light-font);
 }
 
@@ -1429,12 +1479,22 @@ p.loss {
 .match-dialog-close {
     background: none;
     border: none;
-    font-size: 22px;
     cursor: pointer;
     color: var(--light-font);
-    padding: 0 4px;
-    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: color 0.2s;
+}
+
+.match-dialog-close svg {
+    width: 20px;
+    height: 20px;
+}
+
+.match-dialog-close svg path {
+    fill: currentColor;
 }
 
 .match-dialog-close:hover {
@@ -1443,7 +1503,7 @@ p.loss {
 
 .match-dialog-close:focus-visible {
     outline: 2px solid var(--blue-font);
-    border-radius: 4px;
+    outline-offset: 2px;
 }
 
 .match-dialog-meta {
@@ -1457,14 +1517,13 @@ p.loss {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--font);
 }
 
 .match-dialog-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+
     color: var(--light-font);
 }
 
@@ -1476,9 +1535,8 @@ p.loss {
     display: flex;
     align-items: center;
     padding: 6px 20px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+
     color: var(--light-font);
 }
 
@@ -1523,27 +1581,39 @@ p.loss {
     }
 }
 
-@media only screen and (max-width: 1024px) {
+@media only screen and (max-width: 1080px) {
     .content-layout {
         grid-template-columns: 1fr 250px;
         gap: 16px;
     }
+
+    .longest-streak,
+    .medal-secondary {
+        display: none;
+    }
 }
 
 @media only screen and (max-width: 768px) {
-    .nav-center {
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 8px 10px;
+    .medal-secondary {
+        display: flex;
     }
 
-    .nav-logo {
-        font-size: 18px;
+    .medal-wrapper {
+        flex-direction: column;
+    }
+
+    .nav-center {
+        padding: 12px;
+    }
+
+    .nav-logo,
+    .nav-actions,
+    .bookmark-container {
+        display: none;
     }
 
     .nav-search {
-        order: 1;
-        flex-basis: 100%;
+        flex: 1;
         justify-content: stretch;
     }
 
@@ -1551,26 +1621,25 @@ p.loss {
         max-width: none;
     }
 
-    .nav-link {
-        margin-left: auto;
-    }
-
-    .theme-btn {
-        height: 34px;
-        width: 34px;
-        min-width: 34px;
-    }
-
     .tooltip {
         display: none;
     }
 
     main {
-        padding: 12px 8px;
+        padding: 12px 12px 72px;
+    }
+
+    .tabs {
+        display: none;
     }
 
     .overview-grid {
         grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .overview-stats-table-wrapper {
+        margin-top: 10px;
     }
 
     .content-layout {
@@ -1579,22 +1648,51 @@ p.loss {
     }
 
     .history-col {
-        position: static;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        pointer-events: none;
+        visibility: hidden;
+        padding: 0;
         max-height: none;
-        padding-bottom: 0;
+    }
+
+    .history-col.history-drawer-open {
+        pointer-events: auto;
+        visibility: visible;
+    }
+
+    .history-drawer-overlay {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .history-drawer-open .history-drawer-overlay {
+        opacity: 1;
     }
 
     .match-history {
-        height: auto;
-        border-radius: 12px;
+        border-radius: 16px 16px 0 0;
+        max-height: 70vh;
+        position: relative;
+        z-index: 1;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .history-drawer-open .match-history {
+        transform: translateY(0);
     }
 
     .mh-list {
-        max-height: 400px;
-    }
-
-    .tabs {
-        margin-bottom: 12px;
+        max-height: calc(70vh - 50px);
     }
 
     .player-card {
@@ -1602,7 +1700,6 @@ p.loss {
     }
 
     .player-wrapper {
-        flex-direction: column;
         gap: 12px;
         padding: 10px 14px;
     }
@@ -1640,16 +1737,54 @@ p.loss {
         display: none;
     }
 
-    .bookmark-dropdown {
+    .bookmark-drawer {
+        display: flex;
         position: fixed;
+        inset: 0;
+        flex-direction: column;
+        justify-content: flex-end;
+        pointer-events: none;
+        visibility: hidden;
+        z-index: 100;
+    }
+
+    .bookmark-drawer.bookmark-drawer-open {
+        display: flex;
+        pointer-events: auto;
+        visibility: visible;
+    }
+
+    .bookmark-drawer-overlay {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .bookmark-drawer-open .bookmark-drawer-overlay {
+        opacity: 1;
+    }
+
+    .bookmark-dropdown {
+        position: relative;
         top: auto;
         bottom: 0;
         left: 0;
         right: 0;
         border-radius: 16px 16px 0 0;
         min-width: auto;
+        min-height: 30vh;
         max-height: 60vh;
         overflow-y: auto;
+        z-index: 1;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .bookmark-drawer-open .bookmark-dropdown {
+        transform: translateY(0);
     }
 
     .bookmark-save-row {
@@ -1662,6 +1797,57 @@ p.loss {
 
     .bookmark-delete {
         padding: 10px 14px;
+    }
+
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        background-color: var(--surface);
+        border-top: 1px solid var(--nav-hover);
+        padding: 6px 0;
+        padding-bottom: max(6px, env(safe-area-inset-bottom));
+    }
+
+    .bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--light-font);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .bottom-nav-item:hover {
+        color: var(--font);
+    }
+
+    .bottom-nav-item:focus-visible {
+        outline: 2px solid var(--blue-font);
+        outline-offset: 2px;
+    }
+
+    .bottom-nav-item svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .bottom-nav-item svg path {
+        fill: currentColor;
+    }
+
+    .bottom-nav-active {
+        color: var(--blue-font);
     }
 }
 
