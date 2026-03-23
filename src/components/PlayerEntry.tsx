@@ -20,6 +20,7 @@ function ordinal(rank: number): string {
 export default function PlayerEntry(props: {
 	player: Player;
 	onHover: (username: string | null) => void;
+	hideGames?: boolean;
 }) {
 	const [expanded, setExpanded] = createSignal(false);
 
@@ -111,57 +112,59 @@ export default function PlayerEntry(props: {
 				</div>
 			</a>
 
-			<button class="expand-btn" onClick={toggle}>
-				<svg
-					class="expand-icon"
-					classList={{ 'expand-icon-open': expanded() }}
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-				>
-					<path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-				</svg>
-				{expanded() ? 'Hide' : 'Show'} Games ({props.player.gamesPlayed})
-			</button>
+			<Show when={!props.hideGames}>
+				<button class="expand-btn" onClick={toggle}>
+					<svg
+						class="expand-icon"
+						classList={{ 'expand-icon-open': expanded() }}
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+					>
+						<path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+					</svg>
+					{expanded() ? 'Hide' : 'Show'} Games ({props.player.gamesPlayed})
+				</button>
 
-			<Show when={expanded()}>
-				<div class="games-list">
-					<div class="game-row game-header">
-						<span class="game-col game-date">Date</span>
-						<span class="game-col game-place">Place</span>
-						<span class="game-col game-vp">VP</span>
-						<span class="game-col game-turns">Turns</span>
-						<span class="game-col game-dur">Duration</span>
-						<span class="game-col game-players">Players</span>
-					</div>
-					<For each={sortedGames()}>
-						{(game) => (
-							<div class="game-row" classList={{ 'game-win': game.rank === 1 }}>
-								<span class="game-col game-date">{formatDate(game.date)}</span>
-								<span class="game-col game-place">
-									<span
-										classList={{
-											'win chip': game.rank === 1,
-											'loss chip': game.rank !== 1
-										}}
-									>
-										{ordinal(game.rank)}
+				<Show when={expanded()}>
+					<div class="games-list">
+						<div class="game-row game-header">
+							<span class="game-col game-date">Date</span>
+							<span class="game-col game-place">Place</span>
+							<span class="game-col game-vp">VP</span>
+							<span class="game-col game-turns">Turns</span>
+							<span class="game-col game-dur">Duration</span>
+							<span class="game-col game-players">Players</span>
+						</div>
+						<For each={sortedGames()}>
+							{(game) => (
+								<div class="game-row" classList={{ 'game-win': game.rank === 1 }}>
+									<span class="game-col game-date">{formatDate(game.date)}</span>
+									<span class="game-col game-place">
+										<span
+											classList={{
+												'win chip': game.rank === 1,
+												'loss chip': game.rank !== 1
+											}}
+										>
+											{ordinal(game.rank)}
+										</span>
 									</span>
-								</span>
-								<span class="game-col game-vp">{game.vp}</span>
-								<span class="game-col game-turns">{game.turnCount}</span>
-								<span class="game-col game-dur">{formatDuration(game.duration)}</span>
-								<span class="game-col game-players">
-									{game.players
-										.sort((a, b) => a.rank - b.rank)
-										.map((p) => p.username)
-										.join(', ')}
-								</span>
-							</div>
-						)}
-					</For>
-				</div>
+									<span class="game-col game-vp">{game.vp}</span>
+									<span class="game-col game-turns">{game.turnCount}</span>
+									<span class="game-col game-dur">{formatDuration(game.duration)}</span>
+									<span class="game-col game-players">
+										{game.players
+											.sort((a, b) => a.rank - b.rank)
+											.map((p) => p.username)
+											.join(', ')}
+									</span>
+								</div>
+							)}
+						</For>
+					</div>
+				</Show>
 			</Show>
 		</div>
 	);

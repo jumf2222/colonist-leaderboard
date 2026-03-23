@@ -5,16 +5,20 @@ import {
 	type RoutePreloadFuncArgs
 } from '@solidjs/router';
 import { Title, Meta } from '@solidjs/meta';
-import { For, Show, onMount, createMemo, createSignal, batch } from 'solid-js';
+import { For, Show, onMount, onCleanup, createMemo, createSignal, batch } from 'solid-js';
 import ConfirmDialog from '~/components/ConfirmDialog';
 import { getLeaderboard } from '~/lib/api';
-import { formatDuration } from '~/lib/format';
 import { createLocalSignal } from '~/lib/createLocalSignal';
 import PlayerEntry from '~/components/PlayerEntry';
 import MatchHistory from '~/components/MatchHistory';
 import Overview from '~/components/Overview';
 import linkOutSvg from '~/lib/assets/link-out.svg?raw';
-import addPeopleSvg from '~/lib/assets/add-people.svg?raw';
+import searchSvg from '~/lib/assets/ic_fluent_search_24_regular.svg?raw';
+import bookmarkAddSvg from '~/lib/assets/bookmark_add.svg?raw';
+import peopleSvg from '~/lib/assets/people_24_regular.svg?raw';
+import peopleCheckSvg from '~/lib/assets/people_checkmark_24_regular.svg?raw';
+import sunnySvg from '~/lib/assets/sunny.svg?raw';
+import moonSvg from '~/lib/assets/moon.svg?raw';
 
 interface Bookmark {
 	name: string;
@@ -44,6 +48,28 @@ export default function Home() {
 	const [deletingBookmark, setDeletingBookmark] = createSignal<string | null>(null);
 	const [hoveredPlayer, setHoveredPlayer] = createSignal<string | null>(null);
 	const [activeTab, setActiveTab] = createSignal<'details' | 'overview'>('details');
+	const [showBookmarks, setShowBookmarks] = createSignal(false);
+	const [theme, setTheme] = createLocalSignal<'light' | 'dark'>('theme',
+		typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+	);
+
+	const applyTheme = (t: 'light' | 'dark') => {
+		const root = document.documentElement;
+		root.classList.remove('light', 'dark');
+		root.classList.add(t);
+	};
+
+	const toggleTheme = () => {
+		const next = theme() === 'light' ? 'dark' : 'light';
+		setTheme(next);
+		applyTheme(next);
+	};
+
+	const isBookmarked = createMemo(() => {
+		const current = usernames().trim();
+		if (!current) return false;
+		return bookmarks().some((b) => b.usernames === current && b.exact === exact());
+	});
 
 	const leaderboard = createAsync(() =>
 		getLeaderboard(
@@ -60,13 +86,25 @@ export default function Home() {
 		if (searchParams.exact !== undefined) setExact(searchParams.exact === 'true');
 	});
 
+	let bookmarkRef: HTMLDivElement | undefined;
+
 	onMount(() => {
+		applyTheme(theme());
+
 		if (
 			(usernames() && searchParams.usernames !== usernames()) ||
 			(!exact() && searchParams.exact !== String(exact()))
 		) {
 			search();
 		}
+
+		const handleClickOutside = (e: MouseEvent) => {
+			if (showBookmarks() && bookmarkRef && !bookmarkRef.contains(e.target as Node)) {
+				setShowBookmarks(false);
+			}
+		};
+		document.addEventListener('click', handleClickOutside);
+		onCleanup(() => document.removeEventListener('click', handleClickOutside));
 	});
 
 	const search = () => {
@@ -80,11 +118,6 @@ export default function Home() {
 
 	const onSubmit = (e: SubmitEvent) => {
 		e.preventDefault();
-		search();
-	};
-
-	const onExactChange = (e: Event) => {
-		setExact((e.target as HTMLInputElement).checked);
 		search();
 	};
 
@@ -152,138 +185,201 @@ export default function Home() {
 
 			<nav>
 				<div class="nav-center">
-					<a class="nav-link" href="https://colonist.io/" target="_blank">
-						<p>Colonist</p>
-						<span innerHTML={linkOutSvg} />
-					</a>
+					<a class="nav-logo" href="/">CL</a>
 
 					<form class="nav-search" onSubmit={onSubmit}>
 						<div class="input">
 							<input
 								type="text"
-								placeholder="Enter players..."
+								placeholder="Search players..."
 								value={usernames()}
 								onInput={(e) => setUsernames(e.currentTarget.value)}
 								name="usernames"
 							/>
-							<button type="submit">
-								<span innerHTML={addPeopleSvg} />
+							<button
+								type="button"
+								class="exact-btn has-tooltip"
+								classList={{ 'exact-btn-active': exact() }}
+								onClick={() => { setExact((v) => !v); search(); }}
+							>
+								<span innerHTML={exact() ? peopleCheckSvg : peopleSvg} />
+								<span class="tooltip">Exact player match</span>
+							</button>
+							<button type="submit" class="has-tooltip">
+								<span innerHTML={searchSvg} />
+								<span class="tooltip">Search</span>
 							</button>
 						</div>
-						<label class="checkbox-label">
-							Exact
-							<input type="checkbox" checked={exact()} name="exact" onChange={onExactChange} />
-						</label>
 						<button
 							type="button"
-							class="bookmark-btn"
-							title="Bookmark current players"
-							onClick={() => setShowBookmarkInput((v) => !v)}
+							class="bookmark-btn has-tooltip"
+							disabled={isBookmarked()}
+							onClick={() => {
+								setShowBookmarkInput(true);
+								setShowBookmarks(false);
+							}}
 						>
-							<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-								<path
-									d="M6 2C5.44772 2 5 2.44772 5 3V21C5 21.3746 5.21608 21.7178 5.55279 21.8944C5.88951 22.0711 6.29443 22.0517 6.6139 21.8444L12 18.2229L17.3861 21.8444C17.7056 22.0517 18.1105 22.0711 18.4472 21.8944C18.7839 21.7178 19 21.3746 19 21V3C19 2.44772 18.5523 2 18 2H6Z"
-									fill="currentColor"
-								/>
-							</svg>
+							<span innerHTML={bookmarkAddSvg} />
+							<span class="tooltip">Bookmark group</span>
 						</button>
+						<div class="bookmark-container" ref={bookmarkRef}>
+							<button
+								type="button"
+								class="bookmark-btn has-tooltip"
+								onClick={() => {
+									setShowBookmarks((v) => !v);
+									setShowBookmarkInput(false);
+								}}
+							>
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+									<path
+										d="M6 2C5.44772 2 5 2.44772 5 3V21C5 21.3746 5.21608 21.7178 5.55279 21.8944C5.88951 22.0711 6.29443 22.0517 6.6139 21.8444L12 18.2229L17.3861 21.8444C17.7056 22.0517 18.1105 22.0711 18.4472 21.8944C18.7839 21.7178 19 21.3746 19 21V3C19 2.44772 18.5523 2 18 2H6Z"
+										fill="currentColor"
+									/>
+								</svg>
+								<span class="tooltip">Bookmarks</span>
+							</button>
+							<Show when={showBookmarks()}>
+								<div class="bookmark-dropdown">
+									<Show when={bookmarks().length > 0} fallback={<p class="bookmark-empty">No bookmarks</p>}>
+										<div class="bookmark-list">
+											<For each={bookmarks()}>
+												{(bookmark) => (
+													<div class="bookmark-item">
+														<button class="bookmark-load" onClick={() => { loadBookmark(bookmark); setShowBookmarks(false); }}>
+															{bookmark.name}
+														</button>
+														<button
+															class="bookmark-delete"
+															onClick={() => deleteBookmark(bookmark.name)}
+														>
+															&times;
+														</button>
+													</div>
+												)}
+											</For>
+										</div>
+									</Show>
+								</div>
+							</Show>
+						</div>
 					</form>
+
+					<button
+						type="button"
+						class="theme-btn has-tooltip"
+						onClick={toggleTheme}
+					>
+						<span innerHTML={theme() === 'dark' ? moonSvg : sunnySvg} />
+						<span class="tooltip">{theme() === 'dark' ? 'Dark mode' : 'Light mode'}</span>
+					</button>
+
+					<a class="nav-link" href="https://colonist.io/" target="_blank">
+						<p>Colonist.io</p>
+						<span innerHTML={linkOutSvg} />
+					</a>
 				</div>
 			</nav>
 
-			<Show when={showBookmarkInput()}>
-				<div class="bookmark-save-row">
-					<input
-						type="text"
-						class="bookmark-name-input"
-						placeholder="Bookmark name..."
-						value={bookmarkName()}
-						onInput={(e) => setBookmarkName(e.currentTarget.value)}
-						onKeyDown={(e) => e.key === 'Enter' && saveBookmark()}
-					/>
-					<button class="bookmark-save-btn" onClick={saveBookmark}>
-						Save
-					</button>
-				</div>
-			</Show>
-
-			<Show when={bookmarks().length > 0}>
-				<div class="bookmarks-list">
-					<For each={bookmarks()}>
-						{(bookmark) => (
-							<div class="bookmark-chip">
-								<button class="bookmark-load" onClick={() => loadBookmark(bookmark)}>
-									{bookmark.name}
-								</button>
-								<button
-									class="bookmark-delete"
-									onClick={() => deleteBookmark(bookmark.name)}
-								>
-									&times;
-								</button>
+			<Show when={leaderboard()} fallback={
+				<div class="empty-state">
+					<h2>Colonist Leaderboard</h2>
+					<p class="empty-hint">Search player names above to compare stats</p>
+					<Show when={bookmarks().length > 0}>
+						<div class="empty-bookmarks">
+							<p class="empty-bookmarks-label">Or load a bookmark</p>
+							<div class="empty-bookmarks-list">
+								<For each={bookmarks()}>
+									{(bookmark) => (
+										<button class="empty-bookmark-chip" onClick={() => loadBookmark(bookmark)}>
+											{bookmark.name}
+										</button>
+									)}
+								</For>
 							</div>
-						)}
-					</For>
+						</div>
+					</Show>
 				</div>
-			</Show>
-
-			<Show when={leaderboard()}>
+			}>
 				{(lb) => (
 					<>
-						<div class="stats-bar">
-							<p>Games played: {lb().games}</p>
-							{lb().avgDuration > 0 && (
-								<p>Avg Duration: {formatDuration(lb().avgDuration)}</p>
-							)}
-						</div>
-
 						<main>
-							<Show when={lb().players.length > 0} fallback={<h2>No games</h2>}>
-								<div class="tabs">
-									<button
-										class="tab"
-										classList={{ 'tab-active': activeTab() === 'details' }}
-										onClick={() => setActiveTab('details')}
-									>
-										Match Details
-									</button>
-									<button
-										class="tab"
-										classList={{ 'tab-active': activeTab() === 'overview' }}
-										onClick={() => setActiveTab('overview')}
-									>
-										Overview
-									</button>
-								</div>
+							<Show when={lb().players.length > 0} fallback={<div class="empty-state"><h2>No games</h2></div>}>
+								<div class="content-layout">
+									<div class="rankings-col">
+										<div class="tabs">
+											<button
+												class="tab"
+												classList={{ 'tab-active': activeTab() === 'details' }}
+												onClick={() => setActiveTab('details')}
+											>
+												Match Details
+											</button>
+											<button
+												class="tab"
+												classList={{ 'tab-active': activeTab() === 'overview' }}
+												onClick={() => setActiveTab('overview')}
+											>
+												Overview
+											</button>
+										</div>
 
-								<Show when={activeTab() === 'details'}>
-									<div class="content-layout">
-										<div class="rankings-col">
+										<Show when={activeTab() === 'details'}>
 											<For each={lb().players}>
 												{(player) => (
 													<PlayerEntry
 														player={player}
 														onHover={setHoveredPlayer}
+														hideGames={(searchParams.exact ?? 'true') === 'true'}
 													/>
 												)}
 											</For>
-										</div>
-										<div class="history-col">
-											<MatchHistory
-												games={lb().matchHistory}
-												hoveredPlayer={hoveredPlayer()}
-											/>
-										</div>
-									</div>
-								</Show>
+										</Show>
 
-								<Show when={activeTab() === 'overview'}>
-									<Overview leaderboard={lb()} />
-								</Show>
+										<Show when={activeTab() === 'overview'}>
+											<Overview leaderboard={lb()} />
+										</Show>
+									</div>
+									<div class="history-col">
+										<MatchHistory
+											games={lb().matchHistory}
+											hoveredPlayer={hoveredPlayer()}
+											totalGames={lb().games}
+											avgDuration={lb().avgDuration}
+										/>
+									</div>
+								</div>
 							</Show>
 						</main>
 					</>
 				)}
+			</Show>
+
+			<Show when={showBookmarkInput()}>
+				<div class="dialog-overlay" onClick={() => setShowBookmarkInput(false)}>
+					<div class="dialog-box" onClick={(e) => e.stopPropagation()}>
+						<p class="dialog-message">Bookmark group</p>
+						<input
+							type="text"
+							class="bookmark-name-input"
+							placeholder="Bookmark name..."
+							value={bookmarkName()}
+							onInput={(e) => setBookmarkName(e.currentTarget.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') saveBookmark();
+								if (e.key === 'Escape') setShowBookmarkInput(false);
+							}}
+						/>
+						<div class="dialog-actions">
+							<button class="dialog-btn dialog-cancel" onClick={() => setShowBookmarkInput(false)}>
+								Cancel
+							</button>
+							<button class="dialog-btn dialog-save" onClick={saveBookmark}>
+								Save
+							</button>
+						</div>
+					</div>
+				</div>
 			</Show>
 
 			<ConfirmDialog

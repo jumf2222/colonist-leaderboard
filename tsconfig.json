@@ -10,11 +10,11 @@
     "allowJs": true,
     "strict": true,
     "noEmit": true,
-    "types": ["@solidjs/start/env"],
+    "types": ["vinxi/types/client"],
     "isolatedModules": true,
     "paths": {
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "app.config.ts"]
 }

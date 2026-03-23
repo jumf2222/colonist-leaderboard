@@ -28,13 +28,26 @@ function ordinal(rank: number): string {
 export default function MatchHistory(props: {
 	games: MatchHistoryGame[];
 	hoveredPlayer: string | null;
+	totalGames: number;
+	avgDuration: number;
 }) {
 	const [selectedGame, setSelectedGame] = createSignal<MatchHistoryGame | null>(null);
 
 	return (
 		<>
 			<div class="match-history">
-				<h3 class="mh-title">Match History</h3>
+				<div class="mh-header">
+					<h3 class="mh-title">Match History</h3>
+					<div class="mh-stats">
+						<span>{props.totalGames} games</span>
+						{props.avgDuration > 0 && (
+							<>
+								<span>&middot;</span>
+								<span>{formatDuration(props.avgDuration)} avg</span>
+							</>
+						)}
+					</div>
+				</div>
 				<div class="mh-list">
 					<For each={props.games}>
 						{(game) => {
@@ -62,7 +75,7 @@ export default function MatchHistory(props: {
 									<span class="mh-date">{formatDate(game.date)}</span>
 									<span class="mh-winner">{winner()?.username ?? '—'}</span>
 									<span class="mh-detail">
-										{formatDuration(game.duration)} &middot; {game.turnCount}t
+										{formatDuration(game.duration)}
 									</span>
 								</button>
 							);

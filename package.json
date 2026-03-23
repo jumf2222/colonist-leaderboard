@@ -3,53 +3,19 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vinxi dev --port 25565",
+    "build": "vinxi build",
+    "preview": "vinxi start"
   },
   "dependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/traverse": "^7.29.0",
-    "@babel/types": "^7.29.0",
-    "@solidjs/meta": "0.30.0-next.0",
-    "@solidjs/router": "0.17.0-next.1",
-    "@solidjs/web": "2.0.0-beta.4",
-    "@tanstack/server-functions-plugin": "1.134.5",
-    "@types/babel__traverse": "^7.28.0",
-    "@types/micromatch": "^4.0.10",
-    "cookie-es": "^2.0.0",
-    "defu": "^6.1.4",
-    "error-stack-parser": "^2.1.4",
-    "es-module-lexer": "^2.0.0",
-    "esbuild": "^0.27.4",
-    "fast-glob": "^3.3.3",
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.15.3",
+    "@solidjs/start": "^1.1.0",
     "fetch-cookie": "^2.1.0",
-    "h3": "2.0.1-rc.16",
-    "html-to-image": "^1.11.13",
-    "micromatch": "^4.0.8",
-    "nitropack": "^2.13.1",
-    "path-to-regexp": "^8.3.0",
-    "pathe": "^2.0.3",
-    "radix3": "^1.1.2",
-    "seroval": "^1.5.1",
-    "seroval-plugins": "^1.5.1",
-    "shiki": "^1.29.2",
-    "solid-js": "2.0.0-beta.4",
-    "source-map-js": "^1.2.1",
-    "srvx": "^0.11.9",
-    "terracotta": "2.0.0-next.2",
-    "vite": "7.3.1",
-    "vite-plugin-solid": "3.0.0-next.2"
+    "solid-js": "^1.9.5",
+    "vinxi": "^0.5.3"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
-  },
-  "engines": {
-    "node": ">=22"
-  },
-  "pnpm": {
-    "overrides": {
-      "vite-plugin-solid@3.0.0-next.2>babel-preset-solid": "next"
-    }
   }
 }
