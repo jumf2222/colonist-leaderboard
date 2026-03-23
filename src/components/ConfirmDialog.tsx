@@ -11,7 +11,12 @@ export default function ConfirmDialog(props: ConfirmDialogProps) {
     return (
         <Show when={props.open}>
             <div class="dialog-overlay" onClick={props.onCancel}>
-                <div class="dialog-box" onClick={(e) => e.stopPropagation()}>
+                <div
+                    class="dialog-box"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
+                >
                     <p class="dialog-message">{props.message}</p>
                     <div class="dialog-actions">
                         <button class="dialog-btn dialog-cancel" onClick={props.onCancel}>

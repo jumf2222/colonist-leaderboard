@@ -1,4 +1,4 @@
-import { For, Show } from "solid-js";
+import { For } from "solid-js";
 import { formatDuration } from "~/lib/format";
 import type { MatchHistoryGame } from "~/lib/types";
 
@@ -60,7 +60,9 @@ export default function MatchHistory(props: {
                                         "mh-dimmed": isDimmed(),
                                     },
                                 ]}
-                                onClick={() => props.onSelectGame(game())}
+                                onClick={() => {
+                                    props.onSelectGame(game());
+                                }}
                             >
                                 <span class="mh-date">{formatDate(game().date)}</span>
                                 <span class="mh-winner">{winner()?.username ?? "—"}</span>

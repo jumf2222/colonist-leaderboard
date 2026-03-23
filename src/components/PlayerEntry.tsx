@@ -30,8 +30,12 @@ export default function PlayerEntry(props: {
     return (
         <div
             class="player-card"
-            onMouseEnter={() => props.onHover(props.player.username)}
-            onMouseLeave={() => props.onHover(null)}
+            onMouseEnter={() => {
+                props.onHover(props.player.username);
+            }}
+            onMouseLeave={() => {
+                props.onHover(null);
+            }}
         >
             <div
                 class="player-wrapper"
@@ -46,7 +50,9 @@ export default function PlayerEntry(props: {
                                 class="player-name-link"
                                 href={`https://colonist.io/profile/${props.player.username}`}
                                 target="_blank"
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                }}
                             >
                                 <h3>{props.player.username}</h3>
                             </a>

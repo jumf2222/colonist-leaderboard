@@ -34,6 +34,7 @@ export const route = {
     preload({ location }: RoutePreloadFuncArgs) {
         const params = new URLSearchParams(location.search);
         if (params.get("usernames")) {
+            // oxlint-disable-next-line typescript/no-floating-promises
             getLeaderboard(
                 params.get("usernames") ?? "",
                 (params.get("exact") ?? "true") === "true",
@@ -73,8 +74,7 @@ export default function Home() {
     });
 
     const toggleTheme = () => {
-        const next = theme() === "light" ? "dark" : "light";
-        setTheme(next);
+        setTheme((prev) => (prev === "light" ? "dark" : "light"));
     };
 
     const isBookmarked = createMemo(() => {
@@ -83,9 +83,9 @@ export default function Home() {
         return bookmarks().some((b) => b.usernames === current && b.exact === exact());
     });
 
-    const leaderboard = createMemo(async () =>
+    const leaderboard = createMemo(() =>
         usernames()
-            ? await getLeaderboard(usernames(), exact(), (searchParams.limit as string) ?? "")
+            ? getLeaderboard(usernames(), exact(), (searchParams.limit as string) ?? "")
             : undefined,
     );
 
@@ -95,12 +95,15 @@ export default function Home() {
     createEffect(
         () => {},
         () => {
-            const lastQuery = JSON.parse(localStorage.getItem("lastQuery") ?? "null");
+            const lastQuery = JSON.parse(localStorage.getItem("lastQuery") ?? "null") as {
+                usernames: string;
+                exact: boolean;
+            } | null;
 
             if (!usernames() && lastQuery?.usernames) {
                 setSearchParams({
                     usernames: lastQuery.usernames,
-                    exact: !lastQuery.exact ? false : undefined,
+                    exact: lastQuery.exact ? undefined : false,
                 });
             }
         },
@@ -126,7 +129,9 @@ export default function Home() {
         };
 
         document.addEventListener("click", handleClickOutside);
-        return () => document.removeEventListener("click", handleClickOutside);
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+        };
     });
 
     const onSubmit = (e: SubmitEvent) => {
@@ -151,7 +156,7 @@ export default function Home() {
     const loadBookmark = (bookmark: Bookmark) => {
         setSearchParams({
             usernames: bookmark.usernames,
-            exact: !bookmark.exact ? false : undefined,
+            exact: bookmark.exact ? undefined : false,
         });
     };
 
@@ -169,9 +174,7 @@ export default function Home() {
     const title = createMemo(() => {
         const lb = leaderboard();
         return `Rankings for ${
-            lb && lb.players.length > 0
-                ? lb.players.map((p) => p.username).join(", ")
-                : (searchParams.usernames ?? "")
+            lb && lb.players.length > 0 ? lb.players.map((p) => p.username).join(", ") : usernames()
         }`;
     });
 
@@ -218,9 +221,9 @@ export default function Home() {
                             <button
                                 type="button"
                                 class={["exact-btn has-tooltip", { "exact-btn-active": exact() }]}
-                                onClick={() =>
-                                    setSearchParams({ exact: exact() ? false : undefined })
-                                }
+                                onClick={() => {
+                                    setSearchParams({ exact: exact() ? false : undefined });
+                                }}
                             >
                                 <span innerHTML={exact() ? peopleCheckSvg : peopleSvg} />
                                 <span class="tooltip">Exact player match</span>
@@ -315,7 +318,9 @@ export default function Home() {
                                             {(bookmark) => (
                                                 <button
                                                     class="empty-bookmark-chip"
-                                                    onClick={() => loadBookmark(bookmark())}
+                                                    onClick={() => {
+                                                        loadBookmark(bookmark());
+                                                    }}
                                                 >
                                                     {bookmark().name}
                                                 </button>
@@ -414,7 +419,12 @@ export default function Home() {
             <Show when={selectedGame()}>
                 {(game) => (
                     <div class="dialog-overlay" onClick={() => setSelectedGame(null)}>
-                        <div class="match-dialog" onClick={(e) => e.stopPropagation()}>
+                        <div
+                            class="match-dialog"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                        >
                             <div class="match-dialog-header">
                                 <h3>Match Details</h3>
                                 <button
@@ -523,7 +533,9 @@ export default function Home() {
                                         </button>
                                         <button
                                             class="bookmark-delete"
-                                            onClick={() => deleteBookmark(bookmark().name)}
+                                            onClick={() => {
+                                                deleteBookmark(bookmark().name);
+                                            }}
                                         >
                                             <span innerHTML={deleteSvg} />
                                         </button>

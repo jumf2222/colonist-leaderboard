@@ -24,7 +24,7 @@ export const getLeaderboard = query(
 
         if (!res.ok) return { games: 0, players: [], avgDuration: 0, matchHistory: [] };
 
-        const rawData: { gameDatas: Game[] } = await res.json();
+        const rawData = (await res.json()) as { gameDatas: Game[] };
 
         const allData = rawData.gameDatas
             .filter((game) => {
@@ -49,7 +49,7 @@ export const getLeaderboard = query(
             })
             .sort((a, b) => a.startTime - b.startTime);
 
-        const limit = parseInt(limitStr);
+        const limit = parseInt(limitStr, 10);
         const data = allData.slice(
             Math.max(isNaN(limit) || limit < 0 ? 0 : allData.length - limit, 0),
         );
@@ -60,7 +60,7 @@ export const getLeaderboard = query(
         const playerVPs: Record<string, number[]> = {};
 
         for (const game of data) {
-            const duration = parseInt(game.duration);
+            const duration = parseInt(game.duration, 10);
             const turns = game.turnCount;
 
             const gamePlayers = game.players.map((p) => ({
@@ -96,7 +96,7 @@ export const getLeaderboard = query(
                 players[player.username].games.push({
                     date:
                         typeof game.startTime === "string"
-                            ? parseInt(game.startTime)
+                            ? parseInt(game.startTime, 10)
                             : game.startTime,
                     duration: isNaN(duration) ? 0 : duration,
                     turnCount: turns,
@@ -155,10 +155,12 @@ export const getLeaderboard = query(
         const avgDuration = durationCount > 0 ? totalDuration / durationCount : 0;
 
         const matchHistory = [...data].reverse().map((game) => {
-            const duration = parseInt(game.duration);
+            const duration = parseInt(game.duration, 10);
             return {
                 date:
-                    typeof game.startTime === "string" ? parseInt(game.startTime) : game.startTime,
+                    typeof game.startTime === "string"
+                        ? parseInt(game.startTime, 10)
+                        : game.startTime,
                 duration: isNaN(duration) ? 0 : duration,
                 turnCount: game.turnCount,
                 players: game.players.map((p) => ({

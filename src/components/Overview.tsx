@@ -135,7 +135,7 @@ function LineChart(props: {
                 <For each={props.series}>
                     {(series) => {
                         const dimmed = () =>
-                            props.highlightedPlayer != null &&
+                            props.highlightedPlayer !== null &&
                             series().name !== props.highlightedPlayer;
                         return (
                             <path
@@ -143,7 +143,7 @@ function LineChart(props: {
                                 fill="none"
                                 stroke={series().color}
                                 stroke-width={
-                                    props.highlightedPlayer != null &&
+                                    props.highlightedPlayer !== null &&
                                     series().name === props.highlightedPlayer
                                         ? "3"
                                         : "2"
