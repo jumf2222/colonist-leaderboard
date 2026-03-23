@@ -1,20 +1,19 @@
+import { Meta, Title } from '@solidjs/meta';
 import {
-	createAsync,
-	useSearchParams,
 	useNavigate,
+	useSearchParams,
 	type RoutePreloadFuncArgs
 } from '@solidjs/router';
-import { Title, Meta } from '@solidjs/meta';
-import { For, Show, onMount, createMemo, createSignal, batch } from 'solid-js';
+import { For, Show, createMemo, createSignal } from 'solid-js';
 import ConfirmDialog from '~/components/ConfirmDialog';
-import { getLeaderboard } from '~/lib/api';
-import { formatDuration } from '~/lib/format';
-import { createLocalSignal } from '~/lib/createLocalSignal';
-import PlayerEntry from '~/components/PlayerEntry';
 import MatchHistory from '~/components/MatchHistory';
 import Overview from '~/components/Overview';
-import linkOutSvg from '~/lib/assets/link-out.svg?raw';
+import PlayerEntry from '~/components/PlayerEntry';
+import { getLeaderboard } from '~/lib/api';
 import addPeopleSvg from '~/lib/assets/add-people.svg?raw';
+import linkOutSvg from '~/lib/assets/link-out.svg?raw';
+import { createLocalSignal } from '~/lib/createLocalSignal';
+import { formatDuration } from '~/lib/format';
 
 interface Bookmark {
 	name: string;
@@ -45,7 +44,7 @@ export default function Home() {
 	const [hoveredPlayer, setHoveredPlayer] = createSignal<string | null>(null);
 	const [activeTab, setActiveTab] = createSignal<'details' | 'overview'>('details');
 
-	const leaderboard = createAsync(() =>
+	const leaderboard = createMemo(() =>
 		getLeaderboard(
 			(searchParams.usernames as string) ?? '',
 			(searchParams.exact ?? 'true') === 'true',
@@ -60,14 +59,14 @@ export default function Home() {
 		if (searchParams.exact !== undefined) setExact(searchParams.exact === 'true');
 	});
 
-	onMount(() => {
-		if (
-			(usernames() && searchParams.usernames !== usernames()) ||
-			(!exact() && searchParams.exact !== String(exact()))
-		) {
-			search();
-		}
-	});
+	// onSettled(() => {
+	// 	if (
+	// 		(usernames() && searchParams.usernames !== usernames()) ||
+	// 		(!exact() && searchParams.exact !== String(exact()))
+	// 	) {
+	// 		search();
+	// 	}
+	// });
 
 	const search = () => {
 		const params = new URLSearchParams({
@@ -113,10 +112,8 @@ export default function Home() {
 	const confirmDelete = () => {
 		const name = deletingBookmark();
 		if (!name) return;
-		batch(() => {
-			setBookmarks((prev) => prev.filter((b) => b.name !== name));
-			setDeletingBookmark(null);
-		});
+		setBookmarks((prev) => prev.filter((b) => b.name !== name));
+		setDeletingBookmark(null);
 	};
 
 	const title = createMemo(() => {
