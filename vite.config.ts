@@ -3,12 +3,15 @@ import { nitroV2Plugin as nitro } from "@solidjs/vite-plugin-nitro-2";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  staged: {
-    "*": "vp check --fix",
-  },
-  lint: { options: { typeAware: true, typeCheck: true } },
-  plugins: [solidStart(), nitro()],
-  server: {
-    port: 25565,
-  },
+    staged: {
+        "*": "vp check --fix",
+    },
+    fmt: {
+        tabWidth: 4,
+    },
+    lint: { options: { typeAware: true, typeCheck: true } },
+    plugins: [solidStart(), nitro()],
+    server: {
+        port: 25565,
+    },
 });
