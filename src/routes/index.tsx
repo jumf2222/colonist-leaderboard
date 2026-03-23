@@ -1,26 +1,25 @@
+import { Meta, Title } from '@solidjs/meta';
 import {
-	createAsync,
-	useSearchParams,
 	useNavigate,
+	useSearchParams,
 	type RoutePreloadFuncArgs
 } from '@solidjs/router';
-import { Title, Meta } from '@solidjs/meta';
-import { For, Show, onMount, onCleanup, createMemo, createSignal, batch } from 'solid-js';
+import { For, Show, createMemo, createSignal } from 'solid-js';
 import ConfirmDialog from '~/components/ConfirmDialog';
-import { getLeaderboard } from '~/lib/api';
-import { createLocalSignal } from '~/lib/createLocalSignal';
-import PlayerEntry from '~/components/PlayerEntry';
 import MatchHistory from '~/components/MatchHistory';
 import Overview from '~/components/Overview';
-import linkOutSvg from '~/lib/assets/link-out.svg?raw';
-import searchSvg from '~/lib/assets/search.svg?raw';
+import PlayerEntry from '~/components/PlayerEntry';
+import { getLeaderboard } from '~/lib/api';
 import bookmarkSvg from '~/lib/assets/bookmark.svg?raw';
 import bookmarkFilledSvg from '~/lib/assets/bookmark-filled.svg?raw';
 import deleteSvg from '~/lib/assets/delete.svg?raw';
+import linkOutSvg from '~/lib/assets/link-out.svg?raw';
+import moonSvg from '~/lib/assets/moon.svg?raw';
 import peopleSvg from '~/lib/assets/people.svg?raw';
 import peopleCheckSvg from '~/lib/assets/people-check.svg?raw';
+import searchSvg from '~/lib/assets/search.svg?raw';
 import sunnySvg from '~/lib/assets/sunny.svg?raw';
-import moonSvg from '~/lib/assets/moon.svg?raw';
+import { createLocalSignal } from '~/lib/createLocalSignal';
 
 interface Bookmark {
 	name: string;
@@ -72,7 +71,7 @@ export default function Home() {
 		return bookmarks().some((b) => b.usernames === current && b.exact === exact());
 	});
 
-	const leaderboard = createAsync(() =>
+	const leaderboard = createMemo(() =>
 		getLeaderboard(
 			(searchParams.usernames as string) ?? '',
 			(searchParams.exact ?? 'true') === 'true',
@@ -89,24 +88,25 @@ export default function Home() {
 
 	let bookmarkRef: HTMLDivElement | undefined;
 
-	onMount(() => {
-		applyTheme(theme());
 
-		if (
-			(usernames() && searchParams.usernames !== usernames()) ||
-			(!exact() && searchParams.exact !== String(exact()))
-		) {
-			search();
-		}
+	// onSettled(() => {
+	// 	applyTheme(theme());
 
-		const handleClickOutside = (e: MouseEvent) => {
-			if (showBookmarks() && bookmarkRef && !bookmarkRef.contains(e.target as Node)) {
-				setShowBookmarks(false);
-			}
-		};
-		document.addEventListener('click', handleClickOutside);
-		onCleanup(() => document.removeEventListener('click', handleClickOutside));
-	});
+	// 	if (
+	// 		(usernames() && searchParams.usernames !== usernames()) ||
+	// 		(!exact() && searchParams.exact !== String(exact()))
+	// 	) {
+	// 		search();
+	// 	}
+
+	// 	const handleClickOutside = (e: MouseEvent) => {
+	// 		if (showBookmarks() && bookmarkRef && !bookmarkRef.contains(e.target as Node)) {
+	// 			setShowBookmarks(false);
+	// 		}
+	// 	};
+	// 	document.addEventListener('click', handleClickOutside);
+	// 	onCleanup(() => document.removeEventListener('click', handleClickOutside));
+	// });
 
 	const search = () => {
 		const params = new URLSearchParams({
@@ -147,10 +147,8 @@ export default function Home() {
 	const confirmDelete = () => {
 		const name = deletingBookmark();
 		if (!name) return;
-		batch(() => {
-			setBookmarks((prev) => prev.filter((b) => b.name !== name));
-			setDeletingBookmark(null);
-		});
+		setBookmarks((prev) => prev.filter((b) => b.name !== name));
+		setDeletingBookmark(null);
 	};
 
 	const title = createMemo(() => {
@@ -199,8 +197,7 @@ export default function Home() {
 							/>
 							<button
 								type="button"
-								class="exact-btn has-tooltip"
-								classList={{ 'exact-btn-active': exact() }}
+								class={["exact-btn has-tooltip", { 'exact-btn-active': exact() }]}
 								onClick={() => { setExact((v) => !v); search(); }}
 							>
 								<span innerHTML={exact() ? peopleCheckSvg : peopleSvg} />
@@ -245,12 +242,12 @@ export default function Home() {
 											<For each={bookmarks()}>
 												{(bookmark) => (
 													<div class="bookmark-item">
-														<button class="bookmark-load" onClick={() => { loadBookmark(bookmark); setShowBookmarks(false); }}>
-															{bookmark.name}
+														<button class="bookmark-load" onClick={() => { loadBookmark(bookmark()); setShowBookmarks(false); }}>
+															{bookmark().name}
 														</button>
 														<button
 															class="bookmark-delete"
-															onClick={() => deleteBookmark(bookmark.name)}
+															onClick={() => deleteBookmark(bookmark().name)}
 														>
 															<span innerHTML={deleteSvg} />
 														</button>
@@ -294,8 +291,8 @@ export default function Home() {
 							<div class="empty-bookmarks-list">
 								<For each={bookmarks()}>
 									{(bookmark) => (
-										<button class="empty-bookmark-chip" onClick={() => loadBookmark(bookmark)}>
-											{bookmark.name}
+										<button class="empty-bookmark-chip" onClick={() => loadBookmark(bookmark())}>
+											{bookmark().name}
 										</button>
 									)}
 								</For>
@@ -312,15 +309,13 @@ export default function Home() {
 									<div class="rankings-col">
 										<div class="tabs">
 											<button
-												class="tab"
-												classList={{ 'tab-active': activeTab() === 'details' }}
+												class={["tab",{ 'tab-active': activeTab() === 'details' }]}
 												onClick={() => setActiveTab('details')}
 											>
 												Overview
 											</button>
 											<button
-												class="tab"
-												classList={{ 'tab-active': activeTab() === 'overview' }}
+												class={["tab",{ 'tab-active': activeTab() === 'overview' }]}
 												onClick={() => setActiveTab('overview')}
 											>
 												Visualise
@@ -331,7 +326,7 @@ export default function Home() {
 											<For each={lb().players}>
 												{(player) => (
 													<PlayerEntry
-														player={player}
+														player={player()}
 														onHover={setHoveredPlayer}
 														hideGames={(searchParams.exact ?? 'true') === 'true'}
 													/>

@@ -1,5 +1,5 @@
 import { query } from '@solidjs/router';
-import type { Game, Leaderboard, Player, PlayerGame } from './types';
+import type { Game, Leaderboard, Player } from './types';
 
 export const getLeaderboard = query(
 	async (usernamesStr: string, exact: boolean, limitStr: string): Promise<Leaderboard | null> => {
@@ -167,6 +167,7 @@ export const getLeaderboard = query(
 				}))
 			};
 		});
+
 
 		return { games: data.length, players: playerList, avgDuration, matchHistory };
 	},

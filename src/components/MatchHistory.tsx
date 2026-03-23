@@ -1,6 +1,6 @@
 import { createSignal, For, Show } from 'solid-js';
-import type { MatchHistoryGame } from '~/lib/types';
 import { formatDuration } from '~/lib/format';
+import type { MatchHistoryGame } from '~/lib/types';
 
 function formatDate(ms: number): string {
 	const d = new Date(ms);
@@ -42,31 +42,30 @@ export default function MatchHistory(props: {
 				<div class="mh-list">
 					<For each={props.games}>
 						{(game) => {
-							const winner = () => game.players.find((p) => p.rank === 1);
+							const winner = () => game().players.find((p) => p.rank === 1);
 							const isHighlighted = () =>
 								props.hoveredPlayer !== null &&
-								game.players.some(
+								game().players.some(
 									(p) => p.username === props.hoveredPlayer && p.rank === 1
 								);
 							const isInvolved = () =>
 								props.hoveredPlayer !== null &&
-								game.players.some((p) => p.username === props.hoveredPlayer);
+								game().players.some((p) => p.username === props.hoveredPlayer);
 							const isDimmed = () =>
 								props.hoveredPlayer !== null && !isInvolved();
 
 							return (
 								<button
-									class="mh-row"
-									classList={{
+									class={["mh-row",{
 										'mh-highlighted': isHighlighted(),
 										'mh-dimmed': isDimmed()
-									}}
-									onClick={() => setSelectedGame(game)}
+									}]}
+									onClick={() => setSelectedGame(game())}
 								>
-									<span class="mh-date">{formatDate(game.date)}</span>
+									<span class="mh-date">{formatDate(game().date)}</span>
 									<span class="mh-winner">{winner()?.username ?? '—'}</span>
 									<span class="mh-detail">
-										{formatDuration(game.duration)}
+										{formatDuration(game().duration)}
 									</span>
 								</button>
 							);
@@ -108,21 +107,20 @@ export default function MatchHistory(props: {
 								<For each={[...game().players].sort((a, b) => a.rank - b.rank)}>
 									{(player) => (
 										<div
-											class="match-dialog-player-row"
-											classList={{ 'match-dialog-winner': player.rank === 1 }}
+											class={["match-dialog-player-row", { 'match-dialog-winner': player().rank === 1 }]}
 										>
 											<span class="mdp-place">
 												<span
-													classList={{
-														'win chip': player.rank === 1,
-														'loss chip': player.rank !== 1
+													class={{
+														'win chip': player().rank === 1,
+														'loss chip': player().rank !== 1
 													}}
 												>
-													{ordinal(player.rank)}
+													{ordinal(player().rank)}
 												</span>
 											</span>
-											<span class="mdp-name">{player.username}</span>
-											<span class="mdp-vp">{player.vp}</span>
+											<span class="mdp-name">{player().username}</span>
+											<span class="mdp-vp">{player().vp}</span>
 										</div>
 									)}
 								</For>

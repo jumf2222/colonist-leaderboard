@@ -1,6 +1,6 @@
 import { createMemo, createSignal, For, Show } from 'solid-js';
-import type { Leaderboard } from '~/lib/types';
 import { formatDuration } from '~/lib/format';
+import type { Leaderboard } from '~/lib/types';
 
 const PLAYER_COLORS = [
 	'var(--blue-font)',
@@ -89,18 +89,18 @@ function LineChart(props: {
 						<>
 							<line
 								x1={padding.left}
-								y1={scaleY(tick)}
+								y1={scaleY(tick())}
 								x2={width - padding.right}
-								y2={scaleY(tick)}
+								y2={scaleY(tick())}
 								class="chart-grid"
 							/>
 							<text
 								x={padding.left - 8}
-								y={scaleY(tick) + 4}
+								y={scaleY(tick()) + 4}
 								class="chart-label"
 								text-anchor="end"
 							>
-								{formatY(tick)}
+								{formatY(tick())}
 							</text>
 						</>
 					)}
@@ -130,13 +130,13 @@ function LineChart(props: {
 				{/* Lines */}
 				<For each={props.series}>
 					{(series) => {
-						const dimmed = () => props.highlightedPlayer != null && series.name !== props.highlightedPlayer;
+						const dimmed = () => props.highlightedPlayer != null && series().name !== props.highlightedPlayer;
 						return (
 							<path
-								d={pathD(series.points)}
+								d={pathD(series().points)}
 								fill="none"
-								stroke={series.color}
-								stroke-width={props.highlightedPlayer != null && series.name === props.highlightedPlayer ? '3' : '2'}
+								stroke={series().color}
+								stroke-width={props.highlightedPlayer != null && series().name === props.highlightedPlayer ? '3' : '2'}
 								stroke-linejoin="round"
 								stroke-linecap="round"
 								opacity={dimmed() ? 0.15 : 1}
@@ -150,14 +150,14 @@ function LineChart(props: {
 				<Show when={hoveredIdx() !== null}>
 					<For each={props.series}>
 						{(series) => {
-							const pt = () => series.points[hoveredIdx()!];
+							const pt = () => series().points[hoveredIdx()!];
 							return (
 								<Show when={pt()}>
 									<circle
 										cx={scaleX(pt().x)}
 										cy={scaleY(pt().y)}
 										r="4"
-										fill={series.color}
+										fill={series().color}
 									/>
 								</Show>
 							);
@@ -192,12 +192,12 @@ function LineChart(props: {
 				<div class="chart-tooltip">
 					<For each={props.series}>
 						{(series) => {
-							const pt = () => series.points[hoveredIdx()!];
+							const pt = () => series().points[hoveredIdx()!];
 							return (
 								<Show when={pt()}>
 									<div class="chart-tooltip-row">
-										<span class="chart-tooltip-dot" style={{ background: series.color }} />
-										<span class="chart-tooltip-name">{series.name}</span>
+										<span class="chart-tooltip-dot" style={{ background: series().color }} />
+										<span class="chart-tooltip-name">{series().name}</span>
 										<span class="chart-tooltip-val">{formatY(pt().y)}</span>
 									</div>
 								</Show>
@@ -212,8 +212,8 @@ function LineChart(props: {
 				<For each={props.series}>
 					{(series) => (
 						<div class="chart-legend-item">
-							<span class="chart-legend-dot" style={{ background: series.color }} />
-							<span>{series.name}</span>
+							<span class="chart-legend-dot" style={{ background: series().color }} />
+							<span>{series().name}</span>
 						</div>
 					)}
 				</For>

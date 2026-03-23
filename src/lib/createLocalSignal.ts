@@ -1,13 +1,17 @@
+// import { isServer } from "@solid-js/web";
 import { createSignal, type Accessor, type Setter } from 'solid-js';
-import { isServer } from 'solid-js/web';
 
 export function createLocalSignal<T>(key: string, defaultValue: T): [Accessor<T>, Setter<T>] {
-	const stored = !isServer ? localStorage.getItem(key) : null;
+	let stored = null;
+	const isServer = true;
+	if (!isServer) {
+		stored = localStorage.getItem(key);
+	}
 	let initial = defaultValue;
 	if (stored !== null) {
 		try {
 			initial = JSON.parse(stored);
-		} catch {}
+		} catch { }
 	}
 	const [value, setValue] = createSignal<T>(initial);
 
