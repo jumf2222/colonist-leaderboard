@@ -10,7 +10,7 @@ export default function App() {
         <Router
             root={(props) => (
                 <MetaProvider>
-                    <Title>Colonist leaderboard</Title>
+                    <Title>Colonist Leaderboard</Title>
                     <Loading>{props.children}</Loading>
                 </MetaProvider>
             )}
