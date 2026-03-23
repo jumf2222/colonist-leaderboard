@@ -566,10 +566,22 @@ nav svg {
     position: relative;
 }
 
+.bookmark-drawer {
+    display: none;
+}
+
+.bookmark-drawer.bookmark-drawer-open {
+    display: block;
+}
+
+.bookmark-drawer-overlay {
+    display: none;
+}
+
 .bookmark-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
+    position: fixed;
+    top: 56px;
+    right: 16px;
     min-width: 220px;
     background-color: var(--surface);
     border-radius: 12px;
@@ -864,6 +876,16 @@ main {
 .history-col {
     position: sticky;
     top: 62px;
+}
+
+.history-drawer-overlay {
+    display: none;
+}
+
+/* BOTTOM NAV */
+
+.bottom-nav {
+    display: none;
 }
 
 /* MATCH HISTORY SIDE PANEL */
@@ -1576,19 +1598,22 @@ p.loss {
         display: flex;
     }
 
-    .nav-center {
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 8px 10px;
+    .medal-wrapper {
+        flex-direction: column;
     }
 
-    .nav-logo {
-        font-size: 18px;
+    .nav-center {
+        padding: 12px;
+    }
+
+    .nav-logo,
+    .nav-actions,
+    .bookmark-container {
+        display: none;
     }
 
     .nav-search {
-        order: 1;
-        flex-basis: 100%;
+        flex: 1;
         justify-content: stretch;
     }
 
@@ -1596,26 +1621,25 @@ p.loss {
         max-width: none;
     }
 
-    .nav-link {
-        margin-left: auto;
-    }
-
-    .theme-btn {
-        height: 34px;
-        width: 34px;
-        min-width: 34px;
-    }
-
     .tooltip {
         display: none;
     }
 
     main {
-        padding: 12px 8px;
+        padding: 12px 12px 72px;
+    }
+
+    .tabs {
+        display: none;
     }
 
     .overview-grid {
         grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .overview-stats-table-wrapper {
+        margin-top: 10px;
     }
 
     .content-layout {
@@ -1624,27 +1648,51 @@ p.loss {
     }
 
     .history-col {
-        position: static;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        pointer-events: none;
+        visibility: hidden;
+        padding: 0;
         max-height: none;
-        padding-bottom: 0;
+    }
+
+    .history-col.history-drawer-open {
+        pointer-events: auto;
+        visibility: visible;
+    }
+
+    .history-drawer-overlay {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .history-drawer-open .history-drawer-overlay {
+        opacity: 1;
     }
 
     .match-history {
-        height: auto;
-        border-radius: 12px;
+        border-radius: 16px 16px 0 0;
+        max-height: 70vh;
+        position: relative;
+        z-index: 1;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .history-drawer-open .match-history {
+        transform: translateY(0);
     }
 
     .mh-list {
-        max-height: 400px;
-    }
-
-    .tabs {
-        display: flex;
-        margin-bottom: 12px;
-    }
-
-    .tab {
-        flex: 1;
+        max-height: calc(70vh - 50px);
     }
 
     .player-card {
@@ -1689,16 +1737,54 @@ p.loss {
         display: none;
     }
 
-    .bookmark-dropdown {
+    .bookmark-drawer {
+        display: flex;
         position: fixed;
+        inset: 0;
+        flex-direction: column;
+        justify-content: flex-end;
+        pointer-events: none;
+        visibility: hidden;
+        z-index: 100;
+    }
+
+    .bookmark-drawer.bookmark-drawer-open {
+        display: flex;
+        pointer-events: auto;
+        visibility: visible;
+    }
+
+    .bookmark-drawer-overlay {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .bookmark-drawer-open .bookmark-drawer-overlay {
+        opacity: 1;
+    }
+
+    .bookmark-dropdown {
+        position: relative;
         top: auto;
         bottom: 0;
         left: 0;
         right: 0;
         border-radius: 16px 16px 0 0;
         min-width: auto;
+        min-height: 30vh;
         max-height: 60vh;
         overflow-y: auto;
+        z-index: 1;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .bookmark-drawer-open .bookmark-dropdown {
+        transform: translateY(0);
     }
 
     .bookmark-save-row {
@@ -1711,6 +1797,57 @@ p.loss {
 
     .bookmark-delete {
         padding: 10px 14px;
+    }
+
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        background-color: var(--surface);
+        border-top: 1px solid var(--nav-hover);
+        padding: 6px 0;
+        padding-bottom: max(6px, env(safe-area-inset-bottom));
+    }
+
+    .bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--light-font);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .bottom-nav-item:hover {
+        color: var(--font);
+    }
+
+    .bottom-nav-item:focus-visible {
+        outline: 2px solid var(--blue-font);
+        outline-offset: 2px;
+    }
+
+    .bottom-nav-item svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .bottom-nav-item svg path {
+        fill: currentColor;
+    }
+
+    .bottom-nav-active {
+        color: var(--blue-font);
     }
 }
 

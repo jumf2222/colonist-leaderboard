@@ -10,9 +10,13 @@ import { formatDuration } from "~/lib/format";
 import type { MatchHistoryGame } from "~/lib/types";
 import bookmarkSvg from "~/lib/assets/bookmark.svg?raw";
 import bookmarkFilledSvg from "~/lib/assets/bookmark-filled.svg?raw";
+import dataSvg from "~/lib/assets/data.svg?raw";
 import deleteSvg from "~/lib/assets/delete.svg?raw";
 import dismissSvg from "~/lib/assets/dismiss.svg?raw";
+import historySvg from "~/lib/assets/history.svg?raw";
+import homeSvg from "~/lib/assets/home.svg?raw";
 import linkOutSvg from "~/lib/assets/link-out.svg?raw";
+import playSvg from "~/lib/assets/play.svg?raw";
 import moonSvg from "~/lib/assets/moon.svg?raw";
 import peopleSvg from "~/lib/assets/people.svg?raw";
 import peopleCheckSvg from "~/lib/assets/people-check.svg?raw";
@@ -49,6 +53,7 @@ export default function Home() {
     const [activeTab, setActiveTab] = createSignal<"details" | "overview">("details");
     const [showBookmarks, setShowBookmarks] = createSignal(false);
     const [selectedGame, setSelectedGame] = createSignal<MatchHistoryGame | null>(null);
+    const [showHistory, setShowHistory] = createSignal(false);
     const [theme, setTheme] = createLocalSignal<"light" | "dark">(
         "theme",
         typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -220,64 +225,6 @@ export default function Home() {
                                 />
                                 <span class="tooltip">Bookmarks</span>
                             </button>
-                            <Show when={showBookmarks()}>
-                                <div class="bookmark-dropdown">
-                                    <Show when={!isBookmarked()}>
-                                        <div class="bookmark-save-row">
-                                            <input
-                                                type="text"
-                                                class="bookmark-name-input"
-                                                placeholder="Bookmark name"
-                                                value={bookmarkName()}
-                                                onInput={(e) =>
-                                                    setBookmarkName(e.currentTarget.value)
-                                                }
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter") saveBookmark();
-                                                    if (e.key === "Escape") setShowBookmarks(false);
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                class="bookmark-save-btn"
-                                                onClick={saveBookmark}
-                                            >
-                                                Save
-                                            </button>
-                                        </div>
-                                    </Show>
-                                    <Show when={bookmarks().length > 0}>
-                                        <div class="bookmark-list">
-                                            <For each={bookmarks()}>
-                                                {(bookmark) => (
-                                                    <div class="bookmark-item">
-                                                        <button
-                                                            class="bookmark-load"
-                                                            onClick={() => {
-                                                                loadBookmark(bookmark());
-                                                                setShowBookmarks(false);
-                                                            }}
-                                                        >
-                                                            {bookmark().name}
-                                                        </button>
-                                                        <button
-                                                            class="bookmark-delete"
-                                                            onClick={() =>
-                                                                deleteBookmark(bookmark().name)
-                                                            }
-                                                        >
-                                                            <span innerHTML={deleteSvg} />
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </For>
-                                        </div>
-                                    </Show>
-                                    <Show when={bookmarks().length === 0 && isBookmarked()}>
-                                        <p class="bookmark-empty">No bookmarks</p>
-                                    </Show>
-                                </div>
-                            </Show>
                         </div>
                     </form>
 
@@ -378,12 +325,24 @@ export default function Home() {
                                             <Overview leaderboard={lb()} />
                                         </Show>
                                     </div>
-                                    <div class="history-col">
+                                    <div
+                                        class={[
+                                            "history-col",
+                                            { "history-drawer-open": showHistory() },
+                                        ]}
+                                    >
+                                        <div
+                                            class="history-drawer-overlay"
+                                            onClick={() => setShowHistory(false)}
+                                        />
                                         <MatchHistory
                                             games={lb().matchHistory}
                                             hoveredPlayer={hoveredPlayer()}
                                             totalGames={lb().games}
-                                            onSelectGame={setSelectedGame}
+                                            onSelectGame={(game) => {
+                                                setSelectedGame(game);
+                                                setShowHistory(false);
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -455,12 +414,96 @@ export default function Home() {
                 )}
             </Show>
 
+            <div class={["bookmark-drawer", { "bookmark-drawer-open": showBookmarks() }]}>
+                <div class="bookmark-drawer-overlay" onClick={() => setShowBookmarks(false)} />
+                <div class="bookmark-dropdown">
+                    <Show when={!isBookmarked()}>
+                        <div class="bookmark-save-row">
+                            <input
+                                type="text"
+                                class="bookmark-name-input"
+                                placeholder="Bookmark name"
+                                value={bookmarkName()}
+                                onInput={(e) => setBookmarkName(e.currentTarget.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveBookmark();
+                                    if (e.key === "Escape") setShowBookmarks(false);
+                                }}
+                            />
+                            <button type="button" class="bookmark-save-btn" onClick={saveBookmark}>
+                                Save
+                            </button>
+                        </div>
+                    </Show>
+                    <Show when={bookmarks().length > 0}>
+                        <div class="bookmark-list">
+                            <For each={bookmarks()}>
+                                {(bookmark) => (
+                                    <div class="bookmark-item">
+                                        <button
+                                            class="bookmark-load"
+                                            onClick={() => {
+                                                loadBookmark(bookmark());
+                                                setShowBookmarks(false);
+                                            }}
+                                        >
+                                            {bookmark().name}
+                                        </button>
+                                        <button
+                                            class="bookmark-delete"
+                                            onClick={() => deleteBookmark(bookmark().name)}
+                                        >
+                                            <span innerHTML={deleteSvg} />
+                                        </button>
+                                    </div>
+                                )}
+                            </For>
+                        </div>
+                    </Show>
+                    <Show when={bookmarks().length === 0 && isBookmarked()}>
+                        <p class="bookmark-empty">No bookmarks</p>
+                    </Show>
+                </div>
+            </div>
+
             <ConfirmDialog
                 message={`Delete bookmark "${deletingBookmark()}"?`}
                 open={deletingBookmark() !== null}
                 onConfirm={confirmDelete}
                 onCancel={() => setDeletingBookmark(null)}
             />
+
+            <div class="bottom-nav">
+                <button
+                    class={["bottom-nav-item", { "bottom-nav-active": activeTab() === "details" }]}
+                    onClick={() => setActiveTab("details")}
+                >
+                    <span innerHTML={homeSvg} />
+                    <span>Overview</span>
+                </button>
+                <button
+                    class={["bottom-nav-item", { "bottom-nav-active": activeTab() === "overview" }]}
+                    onClick={() => setActiveTab("overview")}
+                >
+                    <span innerHTML={dataSvg} />
+                    <span>Visualise</span>
+                </button>
+                <button class="bottom-nav-item" onClick={() => setShowHistory(true)}>
+                    <span innerHTML={historySvg} />
+                    <span>History</span>
+                </button>
+                <button
+                    class={["bottom-nav-item", { "bottom-nav-active": showBookmarks() }]}
+                    onClick={() => setShowBookmarks(!showBookmarks())}
+                >
+                    <span innerHTML={showBookmarks() ? bookmarkFilledSvg : bookmarkSvg} />
+                    <span>Bookmarks</span>
+                </button>
+                <a class="bottom-nav-item" href="https://colonist.io/" target="_blank">
+                    <span innerHTML={playSvg} />
+                    <span>Play</span>
+                </a>
+            </div>
         </>
     );
 }
