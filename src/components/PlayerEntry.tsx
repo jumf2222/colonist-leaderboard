@@ -81,22 +81,7 @@ export default function PlayerEntry(props: {
 					</div>
 				</div>
 
-				<div class="row gap center stats-row">
-					<div class="player center">
-						<h4>Avg Duration</h4>
-						<p class="chip clear">{formatDuration(props.player.avgDuration)}</p>
-					</div>
-					<div class="player center">
-						<h4>Avg Turns</h4>
-						<p class="chip clear">{Math.round(props.player.avgTurns)}</p>
-					</div>
-					<div class="player center">
-						<h4>Avg VP</h4>
-						<p class="chip clear">{props.player.avgVP.toFixed(1)}</p>
-					</div>
-				</div>
-
-				<div class="row medal-wrapper center">
+					<div class="row medal-wrapper center">
 					<div class="row medals center">
 						<span innerHTML={goldSvg} />
 						<p>{props.player.ranks[0]}</p>

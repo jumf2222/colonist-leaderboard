@@ -13,10 +13,12 @@ import PlayerEntry from '~/components/PlayerEntry';
 import MatchHistory from '~/components/MatchHistory';
 import Overview from '~/components/Overview';
 import linkOutSvg from '~/lib/assets/link-out.svg?raw';
-import searchSvg from '~/lib/assets/ic_fluent_search_24_regular.svg?raw';
-import bookmarkAddSvg from '~/lib/assets/bookmark_add.svg?raw';
-import peopleSvg from '~/lib/assets/people_24_regular.svg?raw';
-import peopleCheckSvg from '~/lib/assets/people_checkmark_24_regular.svg?raw';
+import searchSvg from '~/lib/assets/search.svg?raw';
+import bookmarkSvg from '~/lib/assets/bookmark.svg?raw';
+import bookmarkFilledSvg from '~/lib/assets/bookmark-filled.svg?raw';
+import deleteSvg from '~/lib/assets/delete.svg?raw';
+import peopleSvg from '~/lib/assets/people.svg?raw';
+import peopleCheckSvg from '~/lib/assets/people-check.svg?raw';
 import sunnySvg from '~/lib/assets/sunny.svg?raw';
 import moonSvg from '~/lib/assets/moon.svg?raw';
 
@@ -44,7 +46,6 @@ export default function Home() {
 	const [exact, setExact] = createLocalSignal('exact', true);
 	const [bookmarks, setBookmarks] = createLocalSignal<Bookmark[]>('bookmarks', []);
 	const [bookmarkName, setBookmarkName] = createSignal('');
-	const [showBookmarkInput, setShowBookmarkInput] = createSignal(false);
 	const [deletingBookmark, setDeletingBookmark] = createSignal<string | null>(null);
 	const [hoveredPlayer, setHoveredPlayer] = createSignal<string | null>(null);
 	const [activeTab, setActiveTab] = createSignal<'details' | 'overview'>('details');
@@ -130,7 +131,7 @@ export default function Home() {
 			{ name, usernames: currentUsernames, exact: exact() }
 		]);
 		setBookmarkName('');
-		setShowBookmarkInput(false);
+		setShowBookmarks(false);
 	};
 
 	const loadBookmark = (bookmark: Bookmark) => {
@@ -210,38 +211,36 @@ export default function Home() {
 								<span class="tooltip">Search</span>
 							</button>
 						</div>
-						<button
-							type="button"
-							class="bookmark-btn has-tooltip"
-							disabled={isBookmarked()}
-							onClick={() => {
-								setShowBookmarkInput(true);
-								setShowBookmarks(false);
-							}}
-						>
-							<span innerHTML={bookmarkAddSvg} />
-							<span class="tooltip">Bookmark group</span>
-						</button>
 						<div class="bookmark-container" ref={bookmarkRef}>
 							<button
 								type="button"
 								class="bookmark-btn has-tooltip"
-								onClick={() => {
-									setShowBookmarks((v) => !v);
-									setShowBookmarkInput(false);
-								}}
+								onClick={() => setShowBookmarks((v) => !v)}
 							>
-								<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-									<path
-										d="M6 2C5.44772 2 5 2.44772 5 3V21C5 21.3746 5.21608 21.7178 5.55279 21.8944C5.88951 22.0711 6.29443 22.0517 6.6139 21.8444L12 18.2229L17.3861 21.8444C17.7056 22.0517 18.1105 22.0711 18.4472 21.8944C18.7839 21.7178 19 21.3746 19 21V3C19 2.44772 18.5523 2 18 2H6Z"
-										fill="currentColor"
-									/>
-								</svg>
+								<span innerHTML={isBookmarked() ? bookmarkFilledSvg : bookmarkSvg} />
 								<span class="tooltip">Bookmarks</span>
 							</button>
 							<Show when={showBookmarks()}>
 								<div class="bookmark-dropdown">
-									<Show when={bookmarks().length > 0} fallback={<p class="bookmark-empty">No bookmarks</p>}>
+									<Show when={!isBookmarked()}>
+										<div class="bookmark-save-row">
+											<input
+												type="text"
+												class="bookmark-name-input"
+												placeholder="Bookmark name..."
+												value={bookmarkName()}
+												onInput={(e) => setBookmarkName(e.currentTarget.value)}
+												onKeyDown={(e) => {
+													if (e.key === 'Enter') saveBookmark();
+													if (e.key === 'Escape') setShowBookmarks(false);
+												}}
+											/>
+											<button type="button" class="bookmark-save-btn" onClick={saveBookmark}>
+												Save
+											</button>
+										</div>
+									</Show>
+									<Show when={bookmarks().length > 0}>
 										<div class="bookmark-list">
 											<For each={bookmarks()}>
 												{(bookmark) => (
@@ -253,41 +252,45 @@ export default function Home() {
 															class="bookmark-delete"
 															onClick={() => deleteBookmark(bookmark.name)}
 														>
-															&times;
+															<span innerHTML={deleteSvg} />
 														</button>
 													</div>
 												)}
 											</For>
 										</div>
 									</Show>
+									<Show when={bookmarks().length === 0 && isBookmarked()}>
+										<p class="bookmark-empty">No bookmarks</p>
+									</Show>
 								</div>
 							</Show>
 						</div>
 					</form>
 
-					<button
-						type="button"
-						class="theme-btn has-tooltip"
-						onClick={toggleTheme}
-					>
-						<span innerHTML={theme() === 'dark' ? moonSvg : sunnySvg} />
-						<span class="tooltip">{theme() === 'dark' ? 'Dark mode' : 'Light mode'}</span>
-					</button>
+					<div class="nav-actions">
+						<button
+							type="button"
+							class="theme-btn has-tooltip"
+							onClick={toggleTheme}
+						>
+							<span innerHTML={theme() === 'dark' ? moonSvg : sunnySvg} />
+							<span class="tooltip">{theme() === 'dark' ? 'Dark mode' : 'Light mode'}</span>
+						</button>
 
-					<a class="nav-link" href="https://colonist.io/" target="_blank">
-						<p>Colonist.io</p>
-						<span innerHTML={linkOutSvg} />
-					</a>
+						<a class="nav-link" href="https://colonist.io/" target="_blank">
+							<p>Colonist.io</p>
+							<span innerHTML={linkOutSvg} />
+						</a>
+					</div>
 				</div>
 			</nav>
 
 			<Show when={leaderboard()} fallback={
 				<div class="empty-state">
-					<h2>Colonist Leaderboard</h2>
-					<p class="empty-hint">Search player names above to compare stats</p>
+					<h2>Colonist Leaderboards</h2>
+					<p class="empty-hint">Search player names{bookmarks().length > 0 ? ' or load a bookmark' : ''} to compare stats</p>
 					<Show when={bookmarks().length > 0}>
 						<div class="empty-bookmarks">
-							<p class="empty-bookmarks-label">Or load a bookmark</p>
 							<div class="empty-bookmarks-list">
 								<For each={bookmarks()}>
 									{(bookmark) => (
@@ -313,14 +316,14 @@ export default function Home() {
 												classList={{ 'tab-active': activeTab() === 'details' }}
 												onClick={() => setActiveTab('details')}
 											>
-												Match Details
+												Overview
 											</button>
 											<button
 												class="tab"
 												classList={{ 'tab-active': activeTab() === 'overview' }}
 												onClick={() => setActiveTab('overview')}
 											>
-												Overview
+												Visualise
 											</button>
 										</div>
 
@@ -345,7 +348,6 @@ export default function Home() {
 											games={lb().matchHistory}
 											hoveredPlayer={hoveredPlayer()}
 											totalGames={lb().games}
-											avgDuration={lb().avgDuration}
 										/>
 									</div>
 								</div>
@@ -353,33 +355,6 @@ export default function Home() {
 						</main>
 					</>
 				)}
-			</Show>
-
-			<Show when={showBookmarkInput()}>
-				<div class="dialog-overlay" onClick={() => setShowBookmarkInput(false)}>
-					<div class="dialog-box" onClick={(e) => e.stopPropagation()}>
-						<p class="dialog-message">Bookmark group</p>
-						<input
-							type="text"
-							class="bookmark-name-input"
-							placeholder="Bookmark name..."
-							value={bookmarkName()}
-							onInput={(e) => setBookmarkName(e.currentTarget.value)}
-							onKeyDown={(e) => {
-								if (e.key === 'Enter') saveBookmark();
-								if (e.key === 'Escape') setShowBookmarkInput(false);
-							}}
-						/>
-						<div class="dialog-actions">
-							<button class="dialog-btn dialog-cancel" onClick={() => setShowBookmarkInput(false)}>
-								Cancel
-							</button>
-							<button class="dialog-btn dialog-save" onClick={saveBookmark}>
-								Save
-							</button>
-						</div>
-					</div>
-				</div>
 			</Show>
 
 			<ConfirmDialog

@@ -29,6 +29,7 @@ function LineChart(props: {
 	series: ChartSeries[];
 	yLabel: string;
 	formatY?: (v: number) => string;
+	highlightedPlayer?: string | null;
 }) {
 	const padding = { top: 20, right: 20, bottom: 30, left: 50 };
 	const width = 700;
@@ -128,16 +129,21 @@ function LineChart(props: {
 
 				{/* Lines */}
 				<For each={props.series}>
-					{(series) => (
-						<path
-							d={pathD(series.points)}
-							fill="none"
-							stroke={series.color}
-							stroke-width="2"
-							stroke-linejoin="round"
-							stroke-linecap="round"
-						/>
-					)}
+					{(series) => {
+						const dimmed = () => props.highlightedPlayer != null && series.name !== props.highlightedPlayer;
+						return (
+							<path
+								d={pathD(series.points)}
+								fill="none"
+								stroke={series.color}
+								stroke-width={props.highlightedPlayer != null && series.name === props.highlightedPlayer ? '3' : '2'}
+								stroke-linejoin="round"
+								stroke-linecap="round"
+								opacity={dimmed() ? 0.15 : 1}
+								style={{ transition: 'opacity 0.2s, stroke-width 0.2s' }}
+							/>
+						);
+					}}
 				</For>
 
 				{/* Hover dots */}
@@ -217,6 +223,7 @@ function LineChart(props: {
 }
 
 export default function Overview(props: { leaderboard: Leaderboard }) {
+	const [highlightedPlayer, setHighlightedPlayer] = createSignal<string | null>(null);
 	const cumulativePoints = createMemo(() => {
 		return props.leaderboard.players.map((player, pi) => {
 			let cumulative = 0;
@@ -294,6 +301,7 @@ export default function Overview(props: { leaderboard: Leaderboard }) {
 					<LineChart
 						series={cumulativePoints()}
 						yLabel="Points"
+						highlightedPlayer={highlightedPlayer()}
 					/>
 				</div>
 
@@ -303,6 +311,7 @@ export default function Overview(props: { leaderboard: Leaderboard }) {
 						series={rollingWinRate()}
 						yLabel="Win %"
 						formatY={(v) => `${Math.round(v)}%`}
+						highlightedPlayer={highlightedPlayer()}
 					/>
 				</div>
 
@@ -311,6 +320,7 @@ export default function Overview(props: { leaderboard: Leaderboard }) {
 					<LineChart
 						series={vpOverTime()}
 						yLabel="VP"
+						highlightedPlayer={highlightedPlayer()}
 					/>
 				</div>
 
@@ -320,8 +330,42 @@ export default function Overview(props: { leaderboard: Leaderboard }) {
 						series={durationOverTime()}
 						yLabel="Duration"
 						formatY={(v) => formatDuration(v)}
+						highlightedPlayer={highlightedPlayer()}
 					/>
 				</div>
+			</div>
+
+			<div class="overview-stats-table-wrapper">
+				<table class="overview-stats-table">
+					<thead>
+						<tr>
+							<th>Player</th>
+							<th>Avg Duration</th>
+							<th>Avg Turns</th>
+							<th>Avg Victory Points</th>
+						</tr>
+					</thead>
+					<tbody>
+						<For each={props.leaderboard.players}>
+							{(player, pi) => (
+								<tr
+								onMouseEnter={() => setHighlightedPlayer(player.username)}
+								onMouseLeave={() => setHighlightedPlayer(null)}
+								class="overview-stats-row"
+								classList={{ 'overview-stats-row-active': highlightedPlayer() === player.username }}
+							>
+									<td class="overview-player-cell">
+										<span class="overview-player-dot" style={{ background: PLAYER_COLORS[pi() % PLAYER_COLORS.length] }} />
+										{player.username}
+									</td>
+									<td>{formatDuration(player.avgDuration)}</td>
+									<td>{Math.round(player.avgTurns)}</td>
+									<td>{player.avgVP.toFixed(1)}</td>
+								</tr>
+							)}
+						</For>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	);

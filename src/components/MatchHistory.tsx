@@ -29,7 +29,6 @@ export default function MatchHistory(props: {
 	games: MatchHistoryGame[];
 	hoveredPlayer: string | null;
 	totalGames: number;
-	avgDuration: number;
 }) {
 	const [selectedGame, setSelectedGame] = createSignal<MatchHistoryGame | null>(null);
 
@@ -38,15 +37,7 @@ export default function MatchHistory(props: {
 			<div class="match-history">
 				<div class="mh-header">
 					<h3 class="mh-title">Match History</h3>
-					<div class="mh-stats">
-						<span>{props.totalGames} games</span>
-						{props.avgDuration > 0 && (
-							<>
-								<span>&middot;</span>
-								<span>{formatDuration(props.avgDuration)} avg</span>
-							</>
-						)}
-					</div>
+					<span class="mh-stats">{props.totalGames} games</span>
 				</div>
 				<div class="mh-list">
 					<For each={props.games}>
