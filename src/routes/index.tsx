@@ -196,8 +196,7 @@ export default function Home() {
 							/>
 							<button
 								type="button"
-								class="exact-btn has-tooltip"
-								classList={{ 'exact-btn-active': exact() }}
+								class={["exact-btn has-tooltip", { 'exact-btn-active': exact() }]}
 								onClick={() => { setExact((v) => !v); search(); }}
 							>
 								<span innerHTML={exact() ? peopleCheckSvg : peopleSvg} />
@@ -244,12 +243,12 @@ export default function Home() {
 											<For each={bookmarks()}>
 												{(bookmark) => (
 													<div class="bookmark-item">
-														<button class="bookmark-load" onClick={() => { loadBookmark(bookmark); setShowBookmarks(false); }}>
-															{bookmark.name}
+														<button class="bookmark-load" onClick={() => { loadBookmark(bookmark()); setShowBookmarks(false); }}>
+															{bookmark().name}
 														</button>
 														<button
 															class="bookmark-delete"
-															onClick={() => deleteBookmark(bookmark.name)}
+															onClick={() => deleteBookmark(bookmark().name)}
 														>
 															&times;
 														</button>
@@ -289,8 +288,8 @@ export default function Home() {
 							<div class="empty-bookmarks-list">
 								<For each={bookmarks()}>
 									{(bookmark) => (
-										<button class="empty-bookmark-chip" onClick={() => loadBookmark(bookmark)}>
-											{bookmark.name}
+										<button class="empty-bookmark-chip" onClick={() => loadBookmark(bookmark())}>
+											{bookmark().name}
 										</button>
 									)}
 								</For>
@@ -307,15 +306,13 @@ export default function Home() {
 									<div class="rankings-col">
 										<div class="tabs">
 											<button
-												class="tab"
-												classList={{ 'tab-active': activeTab() === 'details' }}
+												class={["tab",{ 'tab-active': activeTab() === 'details' }]}
 												onClick={() => setActiveTab('details')}
 											>
 												Match Details
 											</button>
 											<button
-												class="tab"
-												classList={{ 'tab-active': activeTab() === 'overview' }}
+												class={["tab",{ 'tab-active': activeTab() === 'overview' }]}
 												onClick={() => setActiveTab('overview')}
 											>
 												Overview
@@ -326,7 +323,7 @@ export default function Home() {
 											<For each={lb().players}>
 												{(player) => (
 													<PlayerEntry
-														player={player}
+														player={player()}
 														onHover={setHoveredPlayer}
 														hideGames={(searchParams.exact ?? 'true') === 'true'}
 													/>

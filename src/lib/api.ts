@@ -169,7 +169,6 @@ export const getLeaderboard = query(
 		});
 
 
-		console.log(data)
 		return { games: data.length, players: playerList, avgDuration, matchHistory };
 	},
 	'leaderboard'

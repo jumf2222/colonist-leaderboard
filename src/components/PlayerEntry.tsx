@@ -1,9 +1,9 @@
 import { createSignal, For, Show } from 'solid-js';
-import type { Player } from '~/lib/types';
-import { formatDuration } from '~/lib/format';
+import bronzeSvg from '~/lib/assets/bronze.svg?raw';
 import goldSvg from '~/lib/assets/gold.svg?raw';
 import silverSvg from '~/lib/assets/silver.svg?raw';
-import bronzeSvg from '~/lib/assets/bronze.svg?raw';
+import { formatDuration } from '~/lib/format';
+import type { Player } from '~/lib/types';
 
 function formatDate(ms: number): string {
 	const d = new Date(ms);
@@ -44,7 +44,7 @@ export default function PlayerEntry(props: {
 			>
 				<div class="row gap m-column center">
 					<div class="row gap center">
-						<h2 classList={{ first: props.player.rank === 0 }}>{props.player.rank + 1}</h2>
+						<h2 class={{ first: props.player.rank === 0 }}>{props.player.rank + 1}</h2>
 						<div class="player name">
 							<h3>{props.player.username}</h3>
 							<p>{props.player.points} Points</p>
@@ -115,8 +115,7 @@ export default function PlayerEntry(props: {
 			<Show when={!props.hideGames}>
 				<button class="expand-btn" onClick={toggle}>
 					<svg
-						class="expand-icon"
-						classList={{ 'expand-icon-open': expanded() }}
+						class={["expand-icon", { 'expand-icon-open': expanded() }]}
 						width="16"
 						height="16"
 						viewBox="0 0 24 24"
@@ -139,23 +138,23 @@ export default function PlayerEntry(props: {
 						</div>
 						<For each={sortedGames()}>
 							{(game) => (
-								<div class="game-row" classList={{ 'game-win': game.rank === 1 }}>
-									<span class="game-col game-date">{formatDate(game.date)}</span>
+								<div class={["game-row",{ 'game-win': game().rank === 1 }]}>
+									<span class="game-col game-date">{formatDate(game().date)}</span>
 									<span class="game-col game-place">
 										<span
-											classList={{
-												'win chip': game.rank === 1,
-												'loss chip': game.rank !== 1
+											class={{
+												'win chip': game().rank === 1,
+												'loss chip': game().rank !== 1
 											}}
 										>
-											{ordinal(game.rank)}
+											{ordinal(game().rank)}
 										</span>
 									</span>
-									<span class="game-col game-vp">{game.vp}</span>
-									<span class="game-col game-turns">{game.turnCount}</span>
-									<span class="game-col game-dur">{formatDuration(game.duration)}</span>
+									<span class="game-col game-vp">{game().vp}</span>
+									<span class="game-col game-turns">{game().turnCount}</span>
+									<span class="game-col game-dur">{formatDuration(game().duration)}</span>
 									<span class="game-col game-players">
-										{game.players
+										{game().players
 											.sort((a, b) => a.rank - b.rank)
 											.map((p) => p.username)
 											.join(', ')}
