@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { createMemo, For } from "solid-js";
 import { formatDuration } from "~/lib/format";
 import type { MatchHistoryGame } from "~/lib/types";
 
@@ -40,24 +40,20 @@ export default function MatchHistory(props: {
             <div class="mh-list">
                 <For each={props.games}>
                     {(game) => {
-                        const winner = () => game().players.find((p) => p.rank === 1);
-                        const isHighlighted = () =>
-                            props.hoveredPlayer !== null &&
-                            game().players.some(
-                                (p) => p.username === props.hoveredPlayer && p.rank === 1,
-                            );
-                        const isInvolved = () =>
-                            props.hoveredPlayer !== null &&
-                            game().players.some((p) => p.username === props.hoveredPlayer);
-                        const isDimmed = () => props.hoveredPlayer !== null && !isInvolved();
+                        const winner = createMemo(() => game().players.find((p) => p.rank === 1));
+                        const myPlayer = createMemo(() =>
+                            props.hoveredPlayer === null
+                                ? null
+                                : game().players.find((p) => p.username === props.hoveredPlayer),
+                        );
 
                         return (
                             <button
                                 class={[
                                     "mh-row",
                                     {
-                                        "mh-highlighted": isHighlighted(),
-                                        "mh-dimmed": isDimmed(),
+                                        "mh-highlighted": myPlayer()?.rank === 1,
+                                        "mh-dimmed": props.hoveredPlayer !== null && !myPlayer(),
                                     },
                                 ]}
                                 onClick={() => {
