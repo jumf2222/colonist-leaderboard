@@ -5,9 +5,6 @@ export const getLeaderboard = query(
     async (usernamesStr: string, exact: boolean, limitStr: string): Promise<Leaderboard | null> => {
         "use server";
 
-        await new Promise((res) => setTimeout(res, 5000));
-
-        console.log(usernamesStr, exact, limitStr);
         const playerUsernames = new Set(
             usernamesStr
                 .split(",")
