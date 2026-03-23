@@ -1,8 +1,21 @@
-import { createSignal, type Accessor, type Setter } from "solid-js";
+//@ts-nocheck
+import { ComputeFunction, createEffect, createSignal, Signal, SignalOptions } from "solid-js";
 
-export function createLocalSignal<T>(key: string, defaultValue: T): [Accessor<T>, Setter<T>] {
+export function createLocalSignal<T>(key: string): Signal<T | undefined>;
+export function createLocalSignal<T>(
+    key: string,
+    value: Exclude<T, Function>,
+    options?: SignalOptions<T>,
+): Signal<T>;
+export function createLocalSignal<T>(
+    key: string,
+    fn: ComputeFunction<T>,
+    initialValue?: T,
+    options?: SignalOptions<T>,
+): Signal<T>;
+export function createLocalSignal<T>(key: string, fn: any, defaultValue: any, options: any) {
     let stored = null;
-    const isServer = typeof window !== "undefined";
+    const isServer = typeof window === "undefined";
     if (!isServer) {
         stored = localStorage.getItem(key);
     }
@@ -12,15 +25,17 @@ export function createLocalSignal<T>(key: string, defaultValue: T): [Accessor<T>
             initial = JSON.parse(stored);
         } catch {}
     }
-    const [value, setValue] = createSignal<T>(initial as any);
+    const [value, setValue] = createSignal<T>(
+        typeof fn == "function" ? fn : initial,
+        typeof fn == "function" ? initial : options,
+        typeof fn == "function" ? options : undefined,
+    );
 
-    const setAndPersist = ((v: any) => {
-        const result = setValue(v);
+    createEffect(value, (value) => {
         if (!isServer) {
-            localStorage.setItem(key, JSON.stringify(typeof v === "function" ? v(value()) : v));
+            localStorage.setItem(key, JSON.stringify(value));
         }
-        return result;
-    }) as Setter<T>;
+    });
 
-    return [value, setAndPersist];
+    return [value, setValue];
 }

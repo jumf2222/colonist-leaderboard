@@ -1,18 +1,18 @@
 import { Meta, Title } from "@solidjs/meta";
-import { useNavigate, useSearchParams, type RoutePreloadFuncArgs } from "@solidjs/router";
-import { For, Show, createMemo, createSignal } from "solid-js";
+import { RoutePreloadFuncArgs, useSearchParams } from "@solidjs/router";
+import { For, Loading, Show, createEffect, createMemo, createSignal, onSettled } from "solid-js";
 import ConfirmDialog from "~/components/ConfirmDialog";
 import MatchHistory from "~/components/MatchHistory";
 import Overview from "~/components/Overview";
 import PlayerEntry from "~/components/PlayerEntry";
 import { getLeaderboard } from "~/lib/api";
-import bookmarkSvg from "~/lib/assets/bookmark.svg?raw";
 import bookmarkFilledSvg from "~/lib/assets/bookmark-filled.svg?raw";
+import bookmarkSvg from "~/lib/assets/bookmark.svg?raw";
 import deleteSvg from "~/lib/assets/delete.svg?raw";
 import linkOutSvg from "~/lib/assets/link-out.svg?raw";
 import moonSvg from "~/lib/assets/moon.svg?raw";
-import peopleSvg from "~/lib/assets/people.svg?raw";
 import peopleCheckSvg from "~/lib/assets/people-check.svg?raw";
+import peopleSvg from "~/lib/assets/people.svg?raw";
 import searchSvg from "~/lib/assets/search.svg?raw";
 import sunnySvg from "~/lib/assets/sunny.svg?raw";
 import { createLocalSignal } from "~/lib/createLocalSignal";
@@ -26,19 +26,24 @@ interface Bookmark {
 export const route = {
     preload({ location }: RoutePreloadFuncArgs) {
         const params = new URLSearchParams(location.search);
-        getLeaderboard(
-            params.get("usernames") ?? "",
-            (params.get("exact") ?? "true") === "true",
-            params.get("limit") ?? "",
-        );
+        if (params.get("usernames")) {
+            getLeaderboard(
+                params.get("usernames") ?? "",
+                (params.get("exact") ?? "true") === "true",
+                params.get("limit") ?? "",
+            );
+        }
     },
 };
 
 export default function Home() {
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
-    const [usernames, setUsernames] = createLocalSignal("usernames", "");
-    const [exact, setExact] = createLocalSignal("exact", true);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const usernames = createMemo(() =>
+        searchParams.usernames ? String(searchParams.usernames) : "",
+    );
+    const [formUsernames, setUsernames] = createSignal(() => usernames());
+    const exact = createMemo(() => (searchParams.exact ?? "true") === "true");
+
     const [bookmarks, setBookmarks] = createLocalSignal<Bookmark[]>("bookmarks", []);
     const [bookmarkName, setBookmarkName] = createSignal("");
     const [deletingBookmark, setDeletingBookmark] = createSignal<string | null>(null);
@@ -52,77 +57,73 @@ export default function Home() {
             : "light",
     );
 
-    const applyTheme = (t: "light" | "dark") => {
+    createEffect(theme, (theme) => {
         const root = document.documentElement;
         root.classList.remove("light", "dark");
-        root.classList.add(t);
-    };
+        root.classList.add(theme);
+    });
 
     const toggleTheme = () => {
         const next = theme() === "light" ? "dark" : "light";
         setTheme(next);
-        applyTheme(next);
     };
 
     const isBookmarked = createMemo(() => {
-        const current = usernames().trim();
+        const current = formUsernames().trim();
         if (!current) return false;
         return bookmarks().some((b) => b.usernames === current && b.exact === exact());
     });
 
-    const leaderboard = createMemo(() =>
-        getLeaderboard(
-            (searchParams.usernames as string) ?? "",
-            (searchParams.exact ?? "true") === "true",
-            (searchParams.limit as string) ?? "",
-        ),
+    const leaderboard = createMemo(async () =>
+        usernames()
+            ? await getLeaderboard(usernames(), exact(), (searchParams.limit as string) ?? "")
+            : undefined,
     );
-
-    createMemo(() => {
-        if (searchParams.usernames) setUsernames(searchParams.usernames as string);
-    });
-    createMemo(() => {
-        if (searchParams.exact !== undefined) setExact(searchParams.exact === "true");
-    });
 
     let bookmarkRef: HTMLDivElement | undefined;
 
-    // onSettled(() => {
-    // 	applyTheme(theme());
+    createEffect(
+        () => {},
+        () => {
+            const lastQuery = JSON.parse(localStorage.getItem("lastQuery") ?? "null");
 
-    // 	if (
-    // 		(usernames() && searchParams.usernames !== usernames()) ||
-    // 		(!exact() && searchParams.exact !== String(exact()))
-    // 	) {
-    // 		search();
-    // 	}
+            if (!usernames() && lastQuery?.usernames) {
+                setSearchParams({
+                    usernames: lastQuery.usernames,
+                    exact: !lastQuery.exact ? false : undefined,
+                });
+            }
+        },
+    );
 
-    // 	const handleClickOutside = (e: MouseEvent) => {
-    // 		if (showBookmarks() && bookmarkRef && !bookmarkRef.contains(e.target as Node)) {
-    // 			setShowBookmarks(false);
-    // 		}
-    // 	};
-    // 	document.addEventListener('click', handleClickOutside);
-    // 	onCleanup(() => document.removeEventListener('click', handleClickOutside));
-    // });
+    createEffect(
+        () => [usernames(), exact()],
+        ([usernames, exact]) => {
+            localStorage.setItem("lastQuery", JSON.stringify({ usernames, exact }));
+        },
+    );
 
-    const search = () => {
-        const params = new URLSearchParams({
-            ...(usernames() && { usernames: usernames() }),
-            ...(!exact() && { exact: String(exact()) }),
-        }).toString();
+    onSettled(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (showBookmarks() && bookmarkRef && !bookmarkRef.contains(e.target as Node)) {
+                setShowBookmarks(false);
+            }
+        };
 
-        navigate(params ? `/?${params}` : "/", { resolve: false });
-    };
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    });
 
     const onSubmit = (e: SubmitEvent) => {
         e.preventDefault();
-        search();
+        setSearchParams({
+            usernames: formUsernames() ? formUsernames() : undefined,
+        });
     };
 
     const saveBookmark = () => {
         const name = bookmarkName().trim();
-        const currentUsernames = usernames().trim();
+        const currentUsernames = formUsernames().trim();
         if (!name || !currentUsernames) return;
         setBookmarks((prev) => [
             ...prev.filter((b) => b.name !== name),
@@ -133,9 +134,10 @@ export default function Home() {
     };
 
     const loadBookmark = (bookmark: Bookmark) => {
-        setUsernames(bookmark.usernames);
-        setExact(bookmark.exact);
-        search();
+        setSearchParams({
+            usernames: bookmark.usernames,
+            exact: !bookmark.exact ? false : undefined,
+        });
     };
 
     const deleteBookmark = (name: string) => {
@@ -174,11 +176,13 @@ export default function Home() {
 
     return (
         <>
-            <Show when={leaderboard()}>
-                <Title>{title()}</Title>
-                <Meta property="og:title" content={title()} />
-                <Meta property="og:description" content={ogDescription()} />
-            </Show>
+            <Loading>
+                <Show when={leaderboard()}>
+                    <Title>{title()}</Title>
+                    <Meta property="og:title" content={title()} />
+                    <Meta property="og:description" content={ogDescription()} />
+                </Show>
+            </Loading>
 
             <nav>
                 <div class="nav-center">
@@ -191,7 +195,7 @@ export default function Home() {
                             <input
                                 type="text"
                                 placeholder="Search players..."
-                                value={usernames()}
+                                value={formUsernames()}
                                 onInput={(e) => setUsernames(e.currentTarget.value)}
                                 name="usernames"
                             />
@@ -199,8 +203,7 @@ export default function Home() {
                                 type="button"
                                 class={["exact-btn has-tooltip", { "exact-btn-active": exact() }]}
                                 onClick={() => {
-                                    setExact((v) => !v);
-                                    search();
+                                    setSearchParams({ exact: exact() ? false : undefined });
                                 }}
                             >
                                 <span innerHTML={exact() ? peopleCheckSvg : peopleSvg} />
@@ -211,7 +214,7 @@ export default function Home() {
                                 <span class="tooltip">Search</span>
                             </button>
                         </div>
-                        <div class="bookmark-container" ref={bookmarkRef}>
+                        <div class="bookmark-container" ref={(ref) => (bookmarkRef = ref)}>
                             <button
                                 type="button"
                                 class="bookmark-btn has-tooltip"
@@ -299,101 +302,103 @@ export default function Home() {
                 </div>
             </nav>
 
-            <Show
-                when={leaderboard()}
-                fallback={
-                    <div class="empty-state">
-                        <h2>Colonist Leaderboards</h2>
-                        <p class="empty-hint">
-                            Search player names{bookmarks().length > 0 ? " or load a bookmark" : ""}{" "}
-                            to compare stats
-                        </p>
-                        <Show when={bookmarks().length > 0}>
-                            <div class="empty-bookmarks">
-                                <div class="empty-bookmarks-list">
-                                    <For each={bookmarks()}>
-                                        {(bookmark) => (
-                                            <button
-                                                class="empty-bookmark-chip"
-                                                onClick={() => loadBookmark(bookmark())}
-                                            >
-                                                {bookmark().name}
-                                            </button>
-                                        )}
-                                    </For>
-                                </div>
-                            </div>
-                        </Show>
-                    </div>
-                }
-            >
-                {(lb) => (
-                    <>
-                        <main>
-                            <Show
-                                when={lb().players.length > 0}
-                                fallback={
-                                    <div class="empty-state">
-                                        <h2>No games</h2>
-                                    </div>
-                                }
-                            >
-                                <div class="content-layout">
-                                    <div class="rankings-col">
-                                        <div class="tabs">
-                                            <button
-                                                class={[
-                                                    "tab",
-                                                    { "tab-active": activeTab() === "details" },
-                                                ]}
-                                                onClick={() => setActiveTab("details")}
-                                            >
-                                                Overview
-                                            </button>
-                                            <button
-                                                class={[
-                                                    "tab",
-                                                    { "tab-active": activeTab() === "overview" },
-                                                ]}
-                                                onClick={() => setActiveTab("overview")}
-                                            >
-                                                Visualise
-                                            </button>
-                                        </div>
-
-                                        <Show when={activeTab() === "details"}>
-                                            <For each={lb().players}>
-                                                {(player) => (
-                                                    <PlayerEntry
-                                                        player={player()}
-                                                        onHover={setHoveredPlayer}
-                                                        hideGames={
-                                                            (searchParams.exact ?? "true") ===
-                                                            "true"
-                                                        }
-                                                    />
-                                                )}
-                                            </For>
-                                        </Show>
-
-                                        <Show when={activeTab() === "overview"}>
-                                            <Overview leaderboard={lb()} />
-                                        </Show>
-                                    </div>
-                                    <div class="history-col">
-                                        <MatchHistory
-                                            games={lb().matchHistory}
-                                            hoveredPlayer={hoveredPlayer()}
-                                            totalGames={lb().games}
-                                        />
+            <Loading fallback={<div>Loading...</div>}>
+                <Show
+                    when={leaderboard()}
+                    fallback={
+                        <div class="empty-state">
+                            <h2>Colonist Leaderboards</h2>
+                            <p class="empty-hint">
+                                Search player names
+                                {bookmarks().length > 0 ? " or load a bookmark" : ""} to compare
+                                stats
+                            </p>
+                            <Show when={bookmarks().length > 0}>
+                                <div class="empty-bookmarks">
+                                    <div class="empty-bookmarks-list">
+                                        <For each={bookmarks()}>
+                                            {(bookmark) => (
+                                                <button
+                                                    class="empty-bookmark-chip"
+                                                    onClick={() => loadBookmark(bookmark())}
+                                                >
+                                                    {bookmark().name}
+                                                </button>
+                                            )}
+                                        </For>
                                     </div>
                                 </div>
                             </Show>
-                        </main>
-                    </>
-                )}
-            </Show>
+                        </div>
+                    }
+                >
+                    {(lb) => (
+                        <>
+                            <main>
+                                <Show
+                                    when={lb().players.length > 0}
+                                    fallback={
+                                        <div class="empty-state">
+                                            <h2>No games</h2>
+                                        </div>
+                                    }
+                                >
+                                    <div class="content-layout">
+                                        <div class="rankings-col">
+                                            <div class="tabs">
+                                                <button
+                                                    class={[
+                                                        "tab",
+                                                        { "tab-active": activeTab() === "details" },
+                                                    ]}
+                                                    onClick={() => setActiveTab("details")}
+                                                >
+                                                    Overview
+                                                </button>
+                                                <button
+                                                    class={[
+                                                        "tab",
+                                                        {
+                                                            "tab-active":
+                                                                activeTab() === "overview",
+                                                        },
+                                                    ]}
+                                                    onClick={() => setActiveTab("overview")}
+                                                >
+                                                    Visualise
+                                                </button>
+                                            </div>
 
+                                            <Show when={activeTab() === "details"}>
+                                                <For each={lb().players}>
+                                                    {(player) => (
+                                                        <PlayerEntry
+                                                            player={player()}
+                                                            onHover={setHoveredPlayer}
+                                                            hideGames={exact()}
+                                                        />
+                                                    )}
+                                                </For>
+                                            </Show>
+
+                                            <Show when={activeTab() === "overview"}>
+                                                <Overview leaderboard={lb()} />
+                                            </Show>
+                                        </div>
+                                        <div class="history-col">
+                                            <MatchHistory
+                                                games={lb().matchHistory}
+                                                hoveredPlayer={hoveredPlayer()}
+                                                totalGames={lb().games}
+                                            />
+                                        </div>
+                                    </div>
+                                </Show>
+                            </main>
+                        </>
+                    )}
+                </Show>
+            </Loading>
             <ConfirmDialog
                 message={`Delete bookmark "${deletingBookmark()}"?`}
                 open={deletingBookmark() !== null}
