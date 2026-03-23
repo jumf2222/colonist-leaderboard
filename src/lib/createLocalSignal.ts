@@ -18,7 +18,7 @@ export function createLocalSignal<T>(key: string, fn?: any, defaultValue?: any, 
     if (!isServer) {
         stored = localStorage.getItem(key);
     }
-    let initial = defaultValue;
+    let initial = typeof fn == "function" ? defaultValue : fn;
     if (stored !== null) {
         try {
             initial = JSON.parse(stored);
