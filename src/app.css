@@ -580,8 +580,8 @@ nav svg {
 
 .bookmark-dropdown {
     position: fixed;
-    top: 56px;
-    right: 16px;
+    top: var(--bookmark-top, 56px);
+    right: var(--bookmark-right, 16px);
     min-width: 220px;
     background-color: var(--surface);
     border-radius: 12px;
@@ -981,6 +981,85 @@ main {
 .mh-detail {
     flex-shrink: 0;
     color: var(--light-font);
+}
+
+/* SKELETON */
+
+@keyframes shimmer {
+    0% {
+        background-position: -400px 0;
+    }
+    100% {
+        background-position: 400px 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--surface) 25%,
+        color-mix(in srgb, var(--surface) 50%, var(--background)) 50%,
+        var(--surface) 75%
+    );
+    background-size: 800px 100%;
+    animation: shimmer 1.5s infinite ease-in-out;
+    border-radius: 8px;
+}
+
+.skeleton-card {
+    padding: 16px 20px;
+}
+
+.skeleton-card-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.skeleton-rank {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.skeleton-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.skeleton-name {
+    width: 120px;
+    height: 18px;
+}
+
+.skeleton-sub {
+    width: 80px;
+    height: 14px;
+}
+
+.skeleton-stat {
+    width: 48px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.skeleton-tab {
+    width: 80px;
+    height: 36px;
+}
+
+.skeleton-history-title {
+    width: 140px;
+    height: 20px;
+    margin: 16px;
+}
+
+.skeleton-history-row {
+    height: 44px;
+    margin: 0 16px 8px;
 }
 
 /* PLAYER ENTRY */

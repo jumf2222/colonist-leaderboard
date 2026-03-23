@@ -90,6 +90,7 @@ export default function Home() {
     );
 
     let bookmarkRef: HTMLDivElement | undefined;
+    let bookmarkDrawerRef: HTMLDivElement | undefined;
 
     createEffect(
         () => {},
@@ -114,7 +115,12 @@ export default function Home() {
 
     onSettled(() => {
         const handleClickOutside = (e: MouseEvent) => {
-            if (showBookmarks() && bookmarkRef && !bookmarkRef.contains(e.target as Node)) {
+            if (
+                showBookmarks() &&
+                bookmarkRef &&
+                !bookmarkRef.contains(e.target as Node) &&
+                (!bookmarkDrawerRef || !bookmarkDrawerRef.contains(e.target as Node))
+            ) {
                 setShowBookmarks(false);
             }
         };
@@ -253,7 +259,44 @@ export default function Home() {
                 </div>
             </nav>
 
-            <Loading fallback={<div>Loading...</div>}>
+            <Loading
+                fallback={
+                    <main>
+                        <div class="content-layout">
+                            <div class="rankings-col">
+                                <div class="tabs">
+                                    <button class="tab tab-active">Overview</button>
+                                    <button class="tab">Visualise</button>
+                                </div>
+                                <For each={[1, 2, 3]}>
+                                    {() => (
+                                        <div class="player-card skeleton-card">
+                                            <div class="skeleton-card-inner">
+                                                <div class="skeleton skeleton-rank" />
+                                                <div class="skeleton-info">
+                                                    <div class="skeleton skeleton-name" />
+                                                    <div class="skeleton skeleton-sub" />
+                                                </div>
+                                                <div class="skeleton skeleton-stat" />
+                                                <div class="skeleton skeleton-stat" />
+                                                <div class="skeleton skeleton-stat" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </For>
+                            </div>
+                            <div class="history-col">
+                                <div class="match-history">
+                                    <div class="skeleton skeleton-history-title" />
+                                    <For each={[1, 2, 3, 4, 5]}>
+                                        {() => <div class="skeleton skeleton-history-row" />}
+                                    </For>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                }
+            >
                 <Show
                     when={leaderboard()}
                     fallback={
@@ -429,9 +472,22 @@ export default function Home() {
                 )}
             </Show>
 
-            <div class={["bookmark-drawer", { "bookmark-drawer-open": showBookmarks() }]}>
+            <div
+                class={["bookmark-drawer", { "bookmark-drawer-open": showBookmarks() }]}
+                ref={(ref) => (bookmarkDrawerRef = ref)}
+            >
                 <div class="bookmark-drawer-overlay" onClick={() => setShowBookmarks(false)} />
-                <div class="bookmark-dropdown">
+                <div
+                    class="bookmark-dropdown"
+                    style={(() => {
+                        if (!showBookmarks() || !bookmarkRef) return {};
+                        const rect = bookmarkRef.getBoundingClientRect();
+                        return {
+                            "--bookmark-top": `${rect.bottom + 8}px`,
+                            "--bookmark-right": `${window.innerWidth - rect.right}px`,
+                        };
+                    })()}
+                >
                     <Show when={!isBookmarked()}>
                         <div class="bookmark-save-row">
                             <input
@@ -509,7 +565,10 @@ export default function Home() {
                 </button>
                 <button
                     class={["bottom-nav-item", { "bottom-nav-active": showBookmarks() }]}
-                    onClick={() => setShowBookmarks(!showBookmarks())}
+                    on:click={(e) => {
+                        e.stopPropagation();
+                        setShowBookmarks(!showBookmarks());
+                    }}
                 >
                     <span innerHTML={showBookmarks() ? bookmarkFilledSvg : bookmarkSvg} />
                     <span>Bookmarks</span>

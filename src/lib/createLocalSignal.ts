@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { ComputeFunction, createEffect, createSignal, Signal, SignalOptions } from "solid-js";
 
 export function createLocalSignal<T>(key: string): Signal<T | undefined>;
@@ -13,7 +12,7 @@ export function createLocalSignal<T>(
     initialValue?: T,
     options?: SignalOptions<T>,
 ): Signal<T>;
-export function createLocalSignal<T>(key: string, fn: any, defaultValue: any, options: any) {
+export function createLocalSignal<T>(key: string, fn?: any, defaultValue?: any, options?: any) {
     let stored = null;
     const isServer = typeof window === "undefined";
     if (!isServer) {
