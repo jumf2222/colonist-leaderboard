@@ -213,6 +213,7 @@ export default function Home() {
                                 value={usernames()}
                                 onInput={(e) => setUsernames(e.currentTarget.value)}
                                 name="usernames"
+                                autocapitalize="none"
                             />
                             <button
                                 type="button"
