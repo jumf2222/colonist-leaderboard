@@ -39,25 +39,23 @@
 	--blue-background: rgba(82, 192, 255, 0.2);
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        color-scheme: dark;
+:root.dark {
+	color-scheme: dark;
 
-		--background: #222222;
-		--surface: #363636;
-		--surface-hover: #404040;
-		--font: #F5F5F5;
-		--light-font: rgba(245, 245, 245, 0.6);
-		--nav-hover: #4A4A4A;
-		--button: #222;
-		--button-hover: #5EBCF1;
-		--checkbox-background: var(--blue-background);
+	--background: #222222;
+	--surface: #363636;
+	--surface-hover: #404040;
+	--font: #F5F5F5;
+	--light-font: rgba(245, 245, 245, 0.6);
+	--nav-hover: #4A4A4A;
+	--button: #222;
+	--button-hover: #5EBCF1;
+	--checkbox-background: var(--blue-background);
 
-		--green-font: #48EA96;
-		--red-font: #FFA08F;
-		--gold-font: #FFC038;
-		--blue-font: #75CDFF;
-    }
+	--green-font: #48EA96;
+	--red-font: #FFA08F;
+	--gold-font: #FFC038;
+	--blue-font: #75CDFF;
 }
 
 html, body, div, span, applet, object, iframe,
@@ -127,7 +125,7 @@ nav {
 }
 
 .nav-center {
-	max-width: 1200px;
+	max-width: 1400px;
 	width: 100%;
 	margin: auto;
 	display: flex;
@@ -135,9 +133,44 @@ nav {
 	align-items: center;
 	padding: 6px 10px;
 	gap: 12px;
+	box-sizing: border-box;
+}
+
+.nav-logo {
+	font-family: PixelFont;
+	font-size: 20px;
+	color: var(--blue-font);
+	text-decoration: none;
+	letter-spacing: 2px;
+	line-height: 1;
+}
+
+.theme-btn {
+	height: 38px;
+	width: 38px;
+	min-width: 38px;
+	border-radius: 500px;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--light-font);
+	background-color: transparent;
+	transition: background-color 0.2s, color 0.2s;
+}
+
+.theme-btn:hover {
+	background-color: var(--nav-hover);
+	color: var(--font);
+}
+
+.theme-btn:focus-visible {
+	outline: 2px solid var(--blue-font);
 }
 
 .nav-link {
+	margin-left: auto;
 	height: 38px;
 	padding: 0 6px 0 10px;
 	display: flex;
@@ -227,7 +260,7 @@ nav {
 	color: var(--light-font);
 }
 
-.nav-search .input button {
+.nav-search .input button[type="submit"] {
 	cursor: pointer;
 	background-color: var(--blue-font);
 	height: 38px;
@@ -239,20 +272,49 @@ nav {
 	transition: background-color 0.2s;
 }
 
-.nav-search .input button:focus-visible {
+.nav-search .input button[type="submit"]:focus-visible {
 	background-color: var(--font);
 }
 
-.nav-search .input button:hover {
+.nav-search .input button[type="submit"]:hover {
 	background-color: var(--button-hover);
 }
 
-.nav-search .input button svg {
+.nav-search .input button[type="submit"] svg {
 	margin-right: 2px;
 }
 
-.nav-search .input button svg path {
+.nav-search .input button[type="submit"] svg path {
 	fill: var(--button);
+}
+
+.nav-search .input .exact-btn {
+	height: 38px;
+	width: 38px;
+	min-width: 38px;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--light-font);
+	background-color: transparent;
+	transition: color 0.2s;
+	border-radius: 0;
+	padding: 0;
+}
+
+.nav-search .input .exact-btn:hover {
+	color: var(--blue-font);
+}
+
+.nav-search .input .exact-btn-active {
+	color: var(--blue-font);
+}
+
+.nav-search .input .exact-btn:focus-visible {
+	outline: 2px solid var(--blue-font);
+	outline-offset: -2px;
 }
 
 .nav-search .checkbox-label {
@@ -274,6 +336,45 @@ nav {
 
 .nav-search .checkbox-label:hover {
 	background-color: var(--surface-hover);
+}
+
+.has-tooltip {
+	position: relative;
+}
+
+.tooltip {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 6px 10px;
+	background-color: var(--font);
+	color: var(--background);
+	font-size: 12px;
+	white-space: nowrap;
+	border-radius: 6px;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.15s;
+	z-index: 101;
+}
+
+.tooltip::before {
+	content: '';
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 5px solid transparent;
+	border-bottom-color: var(--font);
+}
+
+.has-tooltip:hover .tooltip {
+	opacity: 1;
+}
+
+.has-tooltip:disabled:hover .tooltip {
+	opacity: 0;
 }
 
 .nav-search .bookmark-btn {
@@ -298,6 +399,12 @@ nav {
 
 .nav-search .bookmark-btn:focus-visible {
 	outline: 2px solid var(--blue-font);
+}
+
+.nav-search .bookmark-btn:disabled {
+	opacity: 0.4;
+	cursor: default;
+	pointer-events: none;
 }
 
 /* CHECKBOX */
@@ -344,25 +451,21 @@ nav {
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E %3Cpath d='M15.88 8.29L10 14.17l-1.88-1.88a.996.996 0 1 0-1.41 1.41l2.59 2.59c.39.39 1.02.39 1.41 0L17.3 9.7a.996.996 0 0 0 0-1.41c-.39-.39-1.03-.39-1.42 0z' fill='%23fff'/%3E %3C/svg%3E");
 }
 
-/* STATS BAR */
-
-.stats-bar {
-	display: flex;
-	justify-content: center;
-	gap: 24px;
-	padding: 12px 10px;
-	font-size: 13px;
-	color: var(--light-font);
-	border-bottom: 1px solid var(--nav-hover);
-}
-
 /* BOOKMARKS */
 
-.bookmark-save-row {
-	display: flex;
-	justify-content: center;
-	gap: 8px;
-	padding: 12px 10px 0;
+.bookmark-container {
+	position: relative;
+}
+
+.bookmark-dropdown {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	min-width: 220px;
+	background-color: var(--surface);
+	border-radius: 12px;
+	box-shadow: rgba(0, 0, 0, 0.15) 0px 4px 16px 0px;
+	z-index: 100;
 }
 
 .bookmark-name-input {
@@ -370,66 +473,40 @@ nav {
 	padding: 8px 16px;
 	border: 2px solid transparent;
 	border-radius: 500px;
-	background-color: var(--surface);
+	background-color: var(--background);
 	color: var(--font);
-	box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 8px 0px;
-	transition: border-color 0.2s, background-color 0.2s;
-	max-width: 200px;
+	transition: border-color 0.2s;
 }
 
 .bookmark-name-input:focus {
 	outline: none;
 	border-color: var(--blue-font);
-	background-color: var(--surface-hover);
 }
 
 .bookmark-name-input::placeholder {
 	color: var(--light-font);
 }
 
-.bookmark-save-btn {
-	font-size: 14px;
-	padding: 8px 20px;
-	border: none;
-	border-radius: 500px;
-	cursor: pointer;
-	color: var(--button);
-	background-color: var(--blue-font);
-	transition: background-color 0.2s;
-}
-
-.bookmark-save-btn:hover {
-	background-color: var(--button-hover);
-}
-
-.bookmark-save-btn:focus-visible {
-	outline: 2px solid var(--font);
-}
-
-.bookmarks-list {
+.bookmark-list {
 	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 8px;
-	padding: 12px 10px 0;
+	flex-direction: column;
 }
 
-.bookmark-chip {
+.bookmark-item {
 	display: flex;
-	border-radius: 500px;
-	overflow: hidden;
-	background-color: var(--surface);
-	box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px 0px;
+	align-items: center;
 }
 
 .bookmark-load {
 	font-size: 13px;
-	padding: 8px 12px;
+	padding: 10px 12px;
 	border: none;
 	cursor: pointer;
 	color: var(--font);
 	background-color: transparent;
 	transition: background-color 0.2s;
+	flex: 1;
+	text-align: left;
 }
 
 .bookmark-load:hover {
@@ -444,7 +521,7 @@ nav {
 
 .bookmark-delete {
 	font-size: 14px;
-	padding: 8px 10px 8px 4px;
+	padding: 10px 12px 10px 4px;
 	border: none;
 	cursor: pointer;
 	color: var(--light-font);
@@ -460,6 +537,13 @@ nav {
 .bookmark-delete:focus-visible {
 	outline: 2px solid var(--red-font);
 	outline-offset: -2px;
+}
+
+.bookmark-empty {
+	font-size: 13px;
+	color: var(--light-font);
+	padding: 16px;
+	text-align: center;
 }
 
 /* CONFIRM DIALOG */
@@ -529,6 +613,86 @@ nav {
 	opacity: 0.85;
 }
 
+.dialog-save {
+	color: #fff;
+	background-color: var(--blue-font);
+}
+
+.dialog-save:hover {
+	opacity: 0.85;
+}
+
+.dialog-box .bookmark-name-input {
+	width: 100%;
+	box-sizing: border-box;
+	margin-bottom: 20px;
+}
+
+/* EMPTY STATE */
+
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 80px 20px;
+	gap: 8px;
+}
+
+.empty-state h2 {
+	font-size: 32px;
+	color: var(--blue-font);
+	margin-bottom: 4px;
+	text-align: center;
+}
+
+.empty-hint {
+	font-size: 14px;
+	color: var(--light-font);
+	margin-top: 4px;
+}
+
+.empty-bookmarks {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.empty-bookmarks-label {
+	font-size: 13px;
+	color: var(--light-font);
+}
+
+.empty-bookmarks-list {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+.empty-bookmark-chip {
+	font-size: 13px;
+	padding: 8px 16px;
+	border: none;
+	border-radius: 500px;
+	cursor: pointer;
+	color: var(--font);
+	background-color: var(--surface);
+	box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 4px 0px;
+	transition: background-color 0.2s, color 0.2s;
+}
+
+.empty-bookmark-chip:hover {
+	background-color: var(--blue-background);
+	color: var(--blue-font);
+}
+
+.empty-bookmark-chip:focus-visible {
+	outline: 2px solid var(--blue-font);
+}
+
 /* MAIN & LAYOUT */
 
 h2 {
@@ -537,27 +701,31 @@ h2 {
 }
 
 main {
-	max-width: 1200px;
+	max-width: 1400px;
 	padding: 20px 10px;
 	margin: auto;
 }
 
 .content-layout {
 	display: flex;
-	gap: 20px;
 	align-items: flex-start;
 }
 
 .rankings-col {
 	flex: 1;
 	min-width: 0;
+	margin-right: 320px;
 }
 
 .history-col {
 	width: 300px;
 	flex-shrink: 0;
-	position: sticky;
+	position: fixed;
 	top: 62px;
+	right: max(10px, calc((100vw - 1400px) / 2 + 10px));
+	height: calc(100vh - 62px);
+	padding: 0 0 20px 0;
+	box-sizing: border-box;
 }
 
 /* MATCH HISTORY SIDE PANEL */
@@ -565,7 +733,18 @@ main {
 .match-history {
 	background-color: var(--surface);
 	border-radius: 12px;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 	overflow: hidden;
+}
+
+.mh-header {
+	padding: 12px 14px;
+	border-bottom: 1px solid var(--nav-hover);
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 }
 
 .mh-title {
@@ -574,13 +753,19 @@ main {
 	color: var(--light-font);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	padding: 12px 14px;
-	border-bottom: 1px solid var(--nav-hover);
+}
+
+.mh-stats {
+	display: flex;
+	gap: 6px;
+	font-size: 12px;
+	color: var(--light-font);
 }
 
 .mh-list {
-	max-height: calc(100vh - 140px);
+	flex: 1;
 	overflow-y: auto;
+	min-height: 0;
 }
 
 .mh-row {
@@ -1149,9 +1334,24 @@ p.loss {
 
 /* RESPONSIVE */
 
+@media only screen and (max-width: 1400px) {
+	.nav-center,
+	main {
+		max-width: none;
+	}
+
+	.history-col {
+		right: 10px;
+	}
+}
+
 @media only screen and (max-width: 1024px) {
 	.history-col {
 		width: 250px;
+	}
+
+	.rankings-col {
+		margin-right: 270px;
 	}
 }
 
@@ -1172,9 +1372,20 @@ p.loss {
 		flex-direction: column;
 	}
 
+	.rankings-col {
+		margin-right: 0;
+	}
+
 	.history-col {
 		width: 100%;
 		position: static;
+		height: auto;
+		padding: 0;
+		right: auto;
+	}
+
+	.match-history {
+		height: auto;
 	}
 
 	.mh-list {
