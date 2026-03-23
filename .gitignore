@@ -2,9 +2,11 @@
 node_modules
 /build
 /.svelte-kit
+/.vinxi
+/.output
 /package
 .env
 .env.*
 !.env.example
 .vercel
-.output
+/solid-start-v2

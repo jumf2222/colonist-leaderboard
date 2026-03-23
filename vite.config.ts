@@ -1,29 +1,16 @@
-import svg from '@poppanator/sveltekit-svg';
-import { sveltekit } from '@sveltejs/kit/vite';
-import type { PluginOption, UserConfig } from 'vite';
+import { defineConfig } from "vite";
+import { solidStart } from "./solid-start-v2/packages/start/src/config";
+import { nitroV2Plugin } from "./solid-start-v2/packages/start-nitro-v2-vite-plugin/src";
 
-const config: UserConfig = {
-	plugins: [sveltekit(), svg({
-		includePaths: ["./src/lib/assets/"],
-		svgoOptions: {
-			multipass: true,
-			plugins: [{
-				name: "preset-default",
-				// by default svgo removes the viewBox which prevents svg icons from scaling
-				// not a good idea! https://github.com/svg/svgo/pull/1461
-				params: { overrides: { removeViewBox: false } }
-			},
-				'prefixIds',
-			]
-			// { name: "removeAttrs", params: { attrs: "(fill|stroke)" } }],
-		},
-	}) as PluginOption],
-	server: {
-		port: 25565,
-		host: true
-	}
-};
-
-export default config;
-
-
+export default defineConfig({
+  plugins: [solidStart({ ssr: false }), nitroV2Plugin()],
+  server: {
+    port: 25565,
+  },
+  resolve: {
+    dedupe: ["solid-js", "@solidjs/web", "@solidjs/router"],
+    alias: {
+      "@solidjs/start": "./solid-start-v2/packages/start/src",
+    },
+  },
+});
