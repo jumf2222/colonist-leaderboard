@@ -581,7 +581,8 @@ nav svg {
 .bookmark-dropdown {
     position: fixed;
     top: var(--bookmark-top, 56px);
-    right: var(--bookmark-right, 16px);
+    left: var(--bookmark-center, 50%);
+    transform: translateX(-50%);
     min-width: 220px;
     background-color: var(--surface);
     border-radius: 12px;
@@ -596,7 +597,7 @@ nav svg {
 }
 
 .bookmark-name-input {
-    font-size: 12px;
+    font-size: 14px;
     padding: 6px 12px;
     border: 2px solid transparent;
     border-radius: 8px;
@@ -617,7 +618,7 @@ nav svg {
 }
 
 .bookmark-save-btn {
-    font-size: 12px;
+    font-size: 14px;
     padding: 6px 14px;
     border: none;
     border-radius: 8px;
@@ -644,6 +645,8 @@ nav svg {
 .bookmark-list {
     display: flex;
     flex-direction: column;
+    padding: 4px 6px;
+    gap: 2px;
 }
 
 .bookmark-item {
@@ -652,8 +655,8 @@ nav svg {
 }
 
 .bookmark-load {
-    font-size: 12px;
-    padding: 10px 12px;
+    font-size: 14px;
+    padding: 8px 10px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -662,6 +665,8 @@ nav svg {
     transition: background-color 0.2s;
     flex: 1;
     text-align: left;
+    display: flex;
+    align-items: center;
 }
 
 .bookmark-load:hover {
@@ -674,8 +679,23 @@ nav svg {
     outline-offset: 2px;
 }
 
+.bookmark-active {
+    color: var(--blue-font);
+}
+
+.bookmark-active::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--blue-font);
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
 .bookmark-delete {
-    padding: 6px 10px;
+    padding: 8px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -1100,6 +1120,8 @@ main {
     border-radius: 12px;
     color: var(--blue-font);
     background-color: var(--blue-background);
+    min-width: 2ch;
+    text-align: center;
 }
 
 .first {
@@ -1113,7 +1135,7 @@ main {
 }
 
 .gap {
-    gap: 32px;
+    gap: 20px;
 }
 
 .name {
@@ -1175,15 +1197,18 @@ main {
 
 .medal-wrapper {
     gap: 6px;
+    margin-left: auto;
+    margin-right: 20px;
 }
 
 .medals {
     justify-content: center;
     background-color: var(--background);
-    padding: 6px 10px 6px 6px;
-    min-width: 60px;
-    border-radius: 8px;
+    padding: 4px 8px 4px 4px;
+    min-width: 48px;
+    border-radius: 6px;
     gap: 4px;
+    font-size: 14px;
 }
 
 .medals svg {
@@ -1666,21 +1691,30 @@ p.loss {
         gap: 16px;
     }
 
-    .longest-streak,
-    .medal-secondary {
-        display: none;
+    .player-wrapper {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .m-column {
+        flex: 1 0 100%;
+        justify-content: space-between;
+    }
+
+    .medal-wrapper {
+        flex-direction: row;
+        flex: 1;
+        justify-content: space-around;
+        margin-right: 0;
+        gap: 8px;
+    }
+
+    .medal-wrapper .medals {
+        flex: 1;
     }
 }
 
 @media only screen and (max-width: 768px) {
-    .medal-secondary {
-        display: flex;
-    }
-
-    .medal-wrapper {
-        flex-direction: column;
-    }
-
     .nav-center {
         padding: 12px;
     }
@@ -1698,6 +1732,23 @@ p.loss {
 
     .nav-search .input {
         max-width: none;
+    }
+
+    .nav-search .input {
+        height: 44px;
+    }
+
+    .nav-search .input input {
+        font-size: 16px;
+    }
+
+    .nav-search .input button[type="submit"],
+    .nav-search .input .exact-btn {
+        height: 44px;
+    }
+
+    .bookmark-name-input {
+        font-size: 16px;
     }
 
     .tooltip {
@@ -1774,13 +1825,30 @@ p.loss {
         max-height: calc(70vh - 50px);
     }
 
+    .mh-title {
+        font-size: 16px;
+    }
+
+    .mh-stats {
+        font-size: 14px;
+    }
+
+    .mh-row {
+        font-size: 14px;
+    }
+
+    .mh-row:nth-child(even) {
+        background-color: var(--background);
+    }
+
     .player-card {
         margin-bottom: 10px;
     }
 
     .player-wrapper {
-        gap: 12px;
+        gap: 10px;
         padding: 10px 14px;
+        flex-wrap: wrap;
     }
 
     .player-wrapper h2 {
@@ -1812,9 +1880,6 @@ p.loss {
         width: 55px;
     }
 
-    .game-players {
-        display: none;
-    }
 
     .bookmark-drawer {
         display: flex;
@@ -1870,12 +1935,27 @@ p.loss {
         padding: 12px;
     }
 
+    .bookmark-name-input {
+        padding: 10px 12px;
+    }
+
+    .bookmark-save-btn {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+
     .bookmark-load {
+        font-size: 14px;
         padding: 14px 16px;
     }
 
     .bookmark-delete {
         padding: 10px 14px;
+    }
+
+    .bookmark-delete svg {
+        width: 20px;
+        height: 20px;
     }
 
     .bottom-nav {
@@ -1887,8 +1967,9 @@ p.loss {
         z-index: 50;
         background-color: var(--surface);
         border-top: 1px solid var(--nav-hover);
-        padding: 6px 0;
-        padding-bottom: max(6px, env(safe-area-inset-bottom));
+        padding: 0;
+        height: 66px;
+        padding-bottom: env(safe-area-inset-bottom);
     }
 
     .bottom-nav-item {
@@ -1896,19 +1977,20 @@ p.loss {
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         gap: 2px;
-        padding: 6px 0;
+        padding: 0;
         border: none;
         background: none;
         cursor: pointer;
-        font-size: 12px;
+        font-size: 10px;
         color: var(--light-font);
         text-decoration: none;
         transition: color 0.2s;
     }
 
     .bottom-nav-item:hover {
-        color: var(--font);
+        color: var(--blue-font);
     }
 
     .bottom-nav-item:focus-visible {
@@ -1917,8 +1999,8 @@ p.loss {
     }
 
     .bottom-nav-item svg {
-        width: 22px;
-        height: 22px;
+        width: 26px;
+        height: 26px;
     }
 
     .bottom-nav-item svg path {
@@ -1932,10 +2014,12 @@ p.loss {
 
 @media only screen and (max-width: 500px) {
     .m-column {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
     }
 
-    .player-wrapper h2 {
+.player-wrapper h2 {
         font-size: 18px;
         padding: 10px;
     }

@@ -493,9 +493,10 @@ export default function Home() {
                     style={(() => {
                         if (!showBookmarks() || !bookmarkRef) return {};
                         const rect = bookmarkRef.getBoundingClientRect();
+                        const center = rect.left + rect.width / 2;
                         return {
                             "--bookmark-top": `${rect.bottom + 8}px`,
-                            "--bookmark-right": `${window.innerWidth - rect.right}px`,
+                            "--bookmark-center": `${center}px`,
                         };
                     })()}
                 >
@@ -523,7 +524,15 @@ export default function Home() {
                                 {(bookmark) => (
                                     <div class="bookmark-item">
                                         <button
-                                            class="bookmark-load"
+                                            class={[
+                                                "bookmark-load",
+                                                {
+                                                    "bookmark-active":
+                                                        bookmark().usernames ===
+                                                            formUsernames().trim() &&
+                                                        bookmark().exact === exact(),
+                                                },
+                                            ]}
                                             onClick={() => {
                                                 loadBookmark(bookmark());
                                                 setShowBookmarks(false);
@@ -583,7 +592,7 @@ export default function Home() {
                         setShowBookmarks(!showBookmarks());
                     }}
                 >
-                    <span innerHTML={showBookmarks() ? bookmarkFilledSvg : bookmarkSvg} />
+                    <span innerHTML={bookmarkSvg} />
                     <span>Bookmarks</span>
                 </button>
                 <a class="bottom-nav-item" href="https://colonist.io/" target="_blank">
