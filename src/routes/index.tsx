@@ -2,13 +2,16 @@ import { Meta, Title } from "@solidjs/meta";
 import { useNavigate, useSearchParams, type RoutePreloadFuncArgs } from "@solidjs/router";
 import { For, Show, createMemo, createSignal } from "solid-js";
 import ConfirmDialog from "~/components/ConfirmDialog";
-import MatchHistory from "~/components/MatchHistory";
+import MatchHistory, { formatFullDate, ordinal } from "~/components/MatchHistory";
 import Overview from "~/components/Overview";
 import PlayerEntry from "~/components/PlayerEntry";
 import { getLeaderboard } from "~/lib/api";
+import { formatDuration } from "~/lib/format";
+import type { MatchHistoryGame } from "~/lib/types";
 import bookmarkSvg from "~/lib/assets/bookmark.svg?raw";
 import bookmarkFilledSvg from "~/lib/assets/bookmark-filled.svg?raw";
 import deleteSvg from "~/lib/assets/delete.svg?raw";
+import dismissSvg from "~/lib/assets/dismiss.svg?raw";
 import linkOutSvg from "~/lib/assets/link-out.svg?raw";
 import moonSvg from "~/lib/assets/moon.svg?raw";
 import peopleSvg from "~/lib/assets/people.svg?raw";
@@ -38,13 +41,14 @@ export default function Home() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [usernames, setUsernames] = createLocalSignal("usernames", "");
-    const [exact, setExact] = createLocalSignal("exact", true);
+    const exact = () => (searchParams.exact ?? "true") === "true";
     const [bookmarks, setBookmarks] = createLocalSignal<Bookmark[]>("bookmarks", []);
     const [bookmarkName, setBookmarkName] = createSignal("");
     const [deletingBookmark, setDeletingBookmark] = createSignal<string | null>(null);
     const [hoveredPlayer, setHoveredPlayer] = createSignal<string | null>(null);
     const [activeTab, setActiveTab] = createSignal<"details" | "overview">("details");
     const [showBookmarks, setShowBookmarks] = createSignal(false);
+    const [selectedGame, setSelectedGame] = createSignal<MatchHistoryGame | null>(null);
     const [theme, setTheme] = createLocalSignal<"light" | "dark">(
         "theme",
         typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -81,9 +85,6 @@ export default function Home() {
     createMemo(() => {
         if (searchParams.usernames) setUsernames(searchParams.usernames as string);
     });
-    createMemo(() => {
-        if (searchParams.exact !== undefined) setExact(searchParams.exact === "true");
-    });
 
     let bookmarkRef: HTMLDivElement | undefined;
 
@@ -106,10 +107,11 @@ export default function Home() {
     // 	onCleanup(() => document.removeEventListener('click', handleClickOutside));
     // });
 
-    const search = () => {
+    const search = (exactOverride?: boolean) => {
+        const e = exactOverride ?? exact();
         const params = new URLSearchParams({
             ...(usernames() && { usernames: usernames() }),
-            ...(!exact() && { exact: String(exact()) }),
+            ...(!e && { exact: "false" }),
         }).toString();
 
         navigate(params ? `/?${params}` : "/", { resolve: false });
@@ -134,8 +136,7 @@ export default function Home() {
 
     const loadBookmark = (bookmark: Bookmark) => {
         setUsernames(bookmark.usernames);
-        setExact(bookmark.exact);
-        search();
+        search(bookmark.exact);
     };
 
     const deleteBookmark = (name: string) => {
@@ -190,7 +191,7 @@ export default function Home() {
                         <div class="input">
                             <input
                                 type="text"
-                                placeholder="Search players..."
+                                placeholder="Search players"
                                 value={usernames()}
                                 onInput={(e) => setUsernames(e.currentTarget.value)}
                                 name="usernames"
@@ -198,10 +199,7 @@ export default function Home() {
                             <button
                                 type="button"
                                 class={["exact-btn has-tooltip", { "exact-btn-active": exact() }]}
-                                onClick={() => {
-                                    setExact((v) => !v);
-                                    search();
-                                }}
+                                onClick={() => search(!exact())}
                             >
                                 <span innerHTML={exact() ? peopleCheckSvg : peopleSvg} />
                                 <span class="tooltip">Exact player match</span>
@@ -229,7 +227,7 @@ export default function Home() {
                                             <input
                                                 type="text"
                                                 class="bookmark-name-input"
-                                                placeholder="Bookmark name..."
+                                                placeholder="Bookmark name"
                                                 value={bookmarkName()}
                                                 onInput={(e) =>
                                                     setBookmarkName(e.currentTarget.value)
@@ -284,17 +282,17 @@ export default function Home() {
                     </form>
 
                     <div class="nav-actions">
+                        <a class="nav-link" href="https://colonist.io/" target="_blank">
+                            <p>Colonist.io</p>
+                            <span innerHTML={linkOutSvg} />
+                        </a>
+
                         <button type="button" class="theme-btn has-tooltip" onClick={toggleTheme}>
                             <span innerHTML={theme() === "dark" ? moonSvg : sunnySvg} />
                             <span class="tooltip">
                                 {theme() === "dark" ? "Dark mode" : "Light mode"}
                             </span>
                         </button>
-
-                        <a class="nav-link" href="https://colonist.io/" target="_blank">
-                            <p>Colonist.io</p>
-                            <span innerHTML={linkOutSvg} />
-                        </a>
                     </div>
                 </div>
             </nav>
@@ -385,12 +383,75 @@ export default function Home() {
                                             games={lb().matchHistory}
                                             hoveredPlayer={hoveredPlayer()}
                                             totalGames={lb().games}
+                                            onSelectGame={setSelectedGame}
                                         />
                                     </div>
                                 </div>
                             </Show>
                         </main>
                     </>
+                )}
+            </Show>
+
+            <Show when={selectedGame()}>
+                {(game) => (
+                    <div class="dialog-overlay" onClick={() => setSelectedGame(null)}>
+                        <div class="match-dialog" onClick={(e) => e.stopPropagation()}>
+                            <div class="match-dialog-header">
+                                <h3>Match Details</h3>
+                                <button
+                                    class="match-dialog-close"
+                                    onClick={() => setSelectedGame(null)}
+                                >
+                                    <span innerHTML={dismissSvg} />
+                                </button>
+                            </div>
+                            <div class="match-dialog-meta">
+                                <div class="match-dialog-stat">
+                                    <span class="match-dialog-label">Date</span>
+                                    <span>{formatFullDate(game().date)}</span>
+                                </div>
+                                <div class="match-dialog-stat">
+                                    <span class="match-dialog-label">Duration</span>
+                                    <span>{formatDuration(game().duration)}</span>
+                                </div>
+                                <div class="match-dialog-stat">
+                                    <span class="match-dialog-label">Turns</span>
+                                    <span>{game().turnCount}</span>
+                                </div>
+                            </div>
+                            <div class="match-dialog-players">
+                                <div class="match-dialog-player-header">
+                                    <span class="mdp-place">Place</span>
+                                    <span class="mdp-name">Player</span>
+                                    <span class="mdp-vp">VP</span>
+                                </div>
+                                <For each={[...game().players].sort((a, b) => a.rank - b.rank)}>
+                                    {(player) => (
+                                        <div
+                                            class={[
+                                                "match-dialog-player-row",
+                                                { "match-dialog-winner": player().rank === 1 },
+                                            ]}
+                                        >
+                                            <span class="mdp-place">
+                                                <span
+                                                    class={{
+                                                        "win chip": player().rank === 1,
+                                                        "loss chip": player().rank !== 1,
+                                                    }}
+                                                >
+                                                    {ordinal(player().rank)}
+                                                </span>
+                                            </span>
+                                            <span class="mdp-name">{player().username}</span>
+                                            <span class="mdp-vp">{player().vp}</span>
+                                        </div>
+                                    )}
+                                </For>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </Show>
 
